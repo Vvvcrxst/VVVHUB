@@ -1,105 +1,74 @@
---[[ 
-    Vvv Hub - PROFESSIONAL SPECIALIST EDITION
-    Enfoque: Estabilidad, Auto-Equip y Aim-Lock
-]]--
+- Script para capa láser en Lua
+-- Autor: Vvvcrxst
 
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local CoreGui = game:GetService("CoreGui")
-local LocalPlayer = Players.LocalPlayer
+-- Configuración general
+local LaserCap = {}
+LaserCap.IsActive = false -- Estado inicial (apagado)
+LaserCap.Position = Vector2.new(100, 100) -- Posición inicial en pantalla
+LaserCap.Button = nil -- Referencia al botón en pantalla
 
--- Limpieza Segura
-local oldGui = CoreGui:FindFirstChild("VvvHub_Final")
-if oldGui then oldGui:Destroy() end
-
-local sg = Instance.new("ScreenGui", CoreGui)
-sg.Name = "VvvHub_Final"
-
--- Diseño Limpio (Sin distracciones)
-local frame = Instance.new("Frame", sg)
-frame.Size = UDim2.new(0, 160, 0, 90)
-frame.Position = UDim2.new(0.5, -80, 0.2, 0)
-frame.BackgroundColor3 = Color3.fromRGB(15, 15, 18)
-frame.Active = true
-frame.Draggable = true
-
-local stroke = Instance.new("UIStroke", frame)
-stroke.Color = Color3.fromRGB(0, 255, 255)
-stroke.Thickness = 2
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
-
-local btn = Instance.new("TextButton", frame)
-btn.Name = "MainToggle"
-btn.Text = "SISTEMA: OFF"
-btn.Size = UDim2.new(0.85, 0, 0.45, 0)
-btn.Position = UDim2.new(0.075, 0, 0.4, 0)
-btn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-btn.TextColor3 = Color3.new(1, 1, 1)
-btn.Font = Enum.Font.GothamBold
-btn.TextSize = 12
-Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
-
-local title = Instance.new("TextLabel", frame)
-title.Text = "Vvv SPECIALIST"
-title.Size = UDim2.new(1, 0, 0.4, 0)
-title.TextColor3 = Color3.fromRGB(0, 255, 255)
-title.BackgroundTransparency = 1
-title.Font = Enum.Font.GothamBold
-
--- Lógica Técnica
-local activo = false
-
-local function getBestTool()
-    local c = LocalPlayer.Character
-    if not c then return end
-    -- Busca por clase 'Tool' y palabras clave (Capa, Laser, Red)
-    for _, t in pairs(LocalPlayer.Backpack:GetChildren()) do
-        if t:IsA("Tool") and (t.Name:lower():find("capa") or t.Name:lower():find("laser")) then return t end
-    end
-    for _, t in pairs(c:GetChildren()) do
-        if t:IsA("Tool") and (t.Name:lower():find("capa") or t.Name:lower():find("laser")) then return t end
+-- Función para detectar si alguien está robando
+function LaserCap:StartDetection()
+    if self.IsActive then
+        local victim = self:DetectStealing() -- Detecta a quien está robando
+        if victim then
+            self:Attack(victim)
+        end
     end
 end
 
-local function solve()
-    local char = LocalPlayer.Character
-    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+-- Simulación de detección de robo
+function LaserCap:DetectStealing()
+    -- Aquí puedes implementar tu lógica de detectar robo
+    -- Por ejemplo, puedes usar eventos específicos del juego
+    print("Detectando si alguien está robando...")
+    return game.Players:FindFirstChild("Ladron") -- Ejemplo: busca un jugador con el nombre "Ladron"
+end
+
+-- Función para atacar al jugador
+function LaserCap:Attack(player)
+    print("¡Atacando a " .. player.Name .. "!")
+    -- Aquí puedes implementar la lógica del ataque, como quitarle vida
+    local Damage = 50
+    if player:FindFirstChild("Humanoid") then
+        player.Humanoid:TakeDamage(Damage)
+    end
+end
+
+-- Función para cambiar el estado del láser
+function LaserCap:Toggle()
+    self.IsActive = not self.IsActive
+    print("Capa láser " .. (self.IsActive and "activada" or "desactivada"))
+end
+
+-- Crear botón móvil para activar/desactivar
+function LaserCap:CreateButton()
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
     
-    local targetTool = getBestTool()
-    if not targetTool then return end
+    local Button = Instance.new("TextButton")
+    Button.Size = UDim2.new(0, 100, 0, 50)
+    Button.Position = UDim2.new(0, self.Position.X, 0, self.Position.Y)
+    Button.Text = "Activar Láser"
+    Button.Parent = ScreenGui
 
-    local target = nil
-    local dist = 35 -- Distancia óptima equilibrada
+    Button.MouseButton1Click:Connect(function()
+        self:Toggle()
+        Button.Text = self.IsActive and "Desactivar Láser" or "Activar Láser"
+    end)
 
-    for _, p in pairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-            local d = (char.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude
-            if d < dist then
-                target = p.Character.HumanoidRootPart
-                break
-            end
-        end
-    end
-
-    if target then
-        -- Forzar el objeto a la mano
-        if targetTool.Parent ~= char then
-            char.Humanoid:EquipTool(targetTool)
-        end
-        -- Apuntado de precisión al torso
-        char.HumanoidRootPart.CFrame = CFrame.new(char.HumanoidRootPart.Position, target.Position)
-        -- Activación constante
-        targetTool:Activate()
-    end
+    Button.Draggable = true
+    self.Button = Button
 end
 
-btn.MouseButton1Click:Connect(function()
-    activo = not activo
-    btn.Text = activo and "SISTEMA: ON" or "SISTEMA: OFF"
-    btn.BackgroundColor3 = activo and Color3.fromRGB(0, 180, 180) or Color3.fromRGB(30, 30, 35)
-end)
+-- Inicialización
+function LaserCap:Init()
+    self:CreateButton()
+    game:GetService("RunService").Heartbeat:Connect(function()
+        self:StartDetection()
+    end)
+end
 
--- Bucle optimizado para no quemar el procesador del móvil
-RunService.Heartbeat:Connect(function()
-    if activo then solve() end
-end)
+LaserCap:Init()
+
+return LaserCap
