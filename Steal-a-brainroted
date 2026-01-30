@@ -1,58 +1,45 @@
 --[[ 
-    Vvv PREMIUM - Módulo Insta-Grab (Steal a Brainrot Edition)
-    Optimizado para captura instantánea de Brainrots.
+    Vvv PREMIUM - Insta-Collect Edition
+    Optimizado para recolectar ítems de "Steal a Brainrot" al instante.
 ]]--
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
--- Configuración Crítica
-_G.GrabBrainrot = true
-_G.RangoCaptura = 50 -- Aumentado para mayor cobertura
+-- Ajustes de velocidad extrema
+_G.AutoCollect = true
+_G.Range = 100 -- Rango de escaneo (puedes subirlo más)
 
-local function capturarBrainrot()
-    if not _G.GrabBrainrot then return end
+local function collectBrainrot()
+    if not _G.AutoCollect then return end
     
     local char = LocalPlayer.Character
     if not char or not char:FindFirstChild("HumanoidRootPart") then return end
 
-    -- Buscamos el objeto específico en el Workspace
+    -- Buscamos los stands y objetos de recolección en el Workspace
     for _, obj in pairs(game.Workspace:GetDescendants()) do
-        -- Filtramos por nombre (ajustado para Steal a Brainrot)
-        if obj.Name == "Brainrot" or obj:FindFirstChild("Brainrot") or obj.Parent.Name == "Brainrot" then
-            
-            local targetPart = nil
+        
+        -- Opción A: Si usa ProximityPrompt (el icono de la mano que se ve en el video)
+        if obj:IsA("ProximityPrompt") then
+            -- Forzamos la activación sin importar la distancia o el tiempo de espera
+            obj.HoldDuration = 0 
+            fireproximityprompt(obj)
+        
+        -- Opción B: Si el objeto se recolecta al tocarlo
+        elseif obj.Name == "Collect" or obj.Name == "Brainrot" or obj.Name == "BrainrotItem" then
             if obj:IsA("BasePart") then
-                targetPart = obj
-            elseif obj:IsA("Model") then
-                targetPart = obj:FindFirstChildWhichIsA("BasePart")
-            end
-
-            if targetPart then
-                local dist = (char.HumanoidRootPart.Position - targetPart.Position).Magnitude
-                if dist <= _G.RangoCaptura then
-                    -- Simulación de contacto físico instantáneo (Touch Interest)
-                    firetouchinterest(char.HumanoidRootPart, targetPart, 0)
-                    task.wait()
-                    firetouchinterest(char.HumanoidRootPart, targetPart, 1)
-                    
-                    -- Intento secundario: Si es una herramienta, equiparla
-                    if targetPart.Parent:IsA("Tool") then
-                        targetPart.Parent.Parent = char
-                    end
-                end
+                firetouchinterest(char.HumanoidRootPart, obj, 0)
+                task.wait()
+                firetouchinterest(char.HumanoidRootPart, obj, 1)
             end
         end
     end
 end
 
--- Bucle de máxima velocidad (RenderStepped corre cada frame del juego)
-RunService.RenderStepped:Connect(function()
-    if _G.GrabBrainrot then
-        capturarBrainrot()
-    end
+-- Ejecución en cada frame para que sea "Al Instante"
+RunService.Stepped:Connect(function()
+    collectBrainrot()
 end)
 
--- Aviso de Sistema Listo
-print("Vvv PREMIUM: Sistema de captura de Brainrot activo a máxima velocidad.")
+print("Vvv PREMIUM: Modo Aspiradora de Brainrots activado.")
