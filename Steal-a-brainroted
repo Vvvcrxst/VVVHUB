@@ -1,72 +1,41 @@
--- Vvv hub OFFICIAL 
+-- Vvv hub OFFICIAL - VERSION DEFINITIVA
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
-if CoreGui:FindFirstChild("VvvHub_Gui") then
-    CoreGui.VvvHub_Gui:Destroy()
-end
+-- (Aquí va tu código de la UI que ya vimos que funciona)
 
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "VvvHub_Gui"
-ScreenGui.Parent = CoreGui
-
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 170, 0, 95)
-MainFrame.Position = UDim2.new(0.5, -85, 0.5, -45)
-MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-MainFrame.Active = true
-MainFrame.Draggable = true 
-MainFrame.Parent = ScreenGui
-
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(0, 255, 255)
-UIStroke.Thickness = 2
-UIStroke.Parent = MainFrame
-
-local Title = Instance.new("TextLabel")
-Title.Text = "Vvv hub"
-Title.Size = UDim2.new(1, 0, 0.45, 0)
-Title.BackgroundTransparency = 1
-Title.TextColor3 = Color3.fromRGB(0, 255, 255)
-Title.Font = Enum.Font.GothamBold
-Title.Parent = MainFrame
-
-local ToggleBtn = Instance.new("TextButton")
-ToggleBtn.Text = "CAPA: OFF"
-ToggleBtn.Size = UDim2.new(0.85, 0, 0.35, 0)
-ToggleBtn.Position = UDim2.new(0.075, 0, 0.55, 0)
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-ToggleBtn.TextColor3 = Color3.new(1, 1, 1)
-ToggleBtn.Parent = MainFrame
-
--- --- ESTA ES LA LÓGICA QUE FALTABA ---
+-- --- LÓGICA DE FUERZA BRUTA ---
 local activa = false
 
-local function gestionarCapa()
+local function equiparYa()
     local char = LocalPlayer.Character
-    local bp = LocalPlayer:FindFirstChild("Backpack")
-    if not char or not bp then return end
+    if not char or not char:FindFirstChild("Humanoid") then return end
 
-    local tool = bp:FindFirstChild("Capa Láser") or char:FindFirstChild("Capa Láser")
-    
-    if tool and activa then
-        if tool.Parent ~= char then
-            char.Humanoid:EquipTool(tool)
+    -- Buscamos en Mochila y en el Personaje por si acaso
+    for _, item in pairs(LocalPlayer.Backpack:GetChildren()) do
+        if item:IsA("Tool") and (item.Name:find("Capa") or item.Name:find("Laser")) then
+            char.Humanoid:EquipTool(item)
+            item:Activate()
         end
-        tool:Activate()
     end
 end
 
 ToggleBtn.MouseButton1Click:Connect(function()
     activa = not activa
     ToggleBtn.Text = activa and "CAPA: ON" or "CAPA: OFF"
-    ToggleBtn.BackgroundColor3 = activa and Color3.fromRGB(0, 150, 150) or Color3.fromRGB(30, 30, 30)
+    ToggleBtn.BackgroundColor3 = activa and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(30, 30, 30)
+    
+    if activa then
+        equiparYa()
+    end
 end)
 
-RunService.Heartbeat:Connect(function()
-    if activa then
-        gestionarCapa()
+-- Si el juego te la intenta quitar, el script la vuelve a poner cada segundo
+task.spawn(function()
+    while task.wait(1) do
+        if activa then
+            equiparYa()
+        end
     end
 end)
