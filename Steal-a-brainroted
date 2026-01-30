@@ -1,6 +1,6 @@
 --[[ 
-    Vvv PREMIUM - Edición SNIPER GUARDIAN
-    Alcance aumentado y fijación de objetivo mejorada.
+    Vvv PREMIUM - Edición HITBOX EXPANDER
+    Alcance calibrado y colisiones aumentadas.
 ]]--
 
 local Players = game:GetService("Players")
@@ -8,7 +8,6 @@ local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
--- Limpieza de interfaces
 if CoreGui:FindFirstChild("VvvHub_Final") then CoreGui.VvvHub_Final:Destroy() end
 
 local ScreenGui = Instance.new("ScreenGui", CoreGui)
@@ -43,49 +42,11 @@ ToggleBtn.TextColor3 = Color3.new(1, 1, 1)
 ToggleBtn.Font = Enum.Font.GothamBold
 Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 6)
 
--- Lógica de Largo Alcance
+-- Configuración
 local activo = false
+local tamañoHitbox = 5 -- Tamaño de la caja de golpeo (Aumentado)
+local rangoSeguro = 35 -- Distancia normal del juego
 
-local function ejecutarDefensa()
-    local char = LocalPlayer.Character
-    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
-    
-    local tool = LocalPlayer.Backpack:FindFirstChild("Capa Láser") or char:FindFirstChild("Capa Láser")
-    if not tool then return end
-
-    local objetivo = nil
-    local rangoMaximo = 60 -- <--- AQUÍ SUBIMOS EL ALCANCE (Antes era 18)
-
-    for _, p in pairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-            local dist = (char.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude
-            if dist < rangoMaximo then
-                objetivo = p.Character.HumanoidRootPart
-                break
-            end
-        end
-    end
-
-    if objetivo then
-        if tool.Parent ~= char then char.Humanoid:EquipTool(tool) end
-        
-        -- Apuntado al Torso
-        local targetPos = objetivo.Position
-        char.HumanoidRootPart.CFrame = CFrame.new(char.HumanoidRootPart.Position, targetPos)
-        
-        tool:Activate()
-    end
-end
-
-ToggleBtn.MouseButton1Click:Connect(function()
-    activo = not activo
-    ToggleBtn.Text = activo and "SISTEMA: ON" or "SISTEMA: OFF"
-    ToggleBtn.BackgroundColor3 = activo and Color3.fromRGB(0, 150, 150) or Color3.fromRGB(25, 25, 25)
-end)
-
-task.spawn(function()
-    while true do
-        if activo then ejecutarDefensa() end
-        task.wait(0.03) -- Más rápido para no perder objetivos lejanos
-    end
-end)
+-- Función para expandir Hitbox
+local function expandirHitbox(targetChar)
+    local hrp = targetChar:FindFirstChild("HumanoidRoot
