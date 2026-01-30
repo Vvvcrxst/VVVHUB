@@ -1,56 +1,72 @@
 --[[ 
-    Vvv PREMIUM - FPS DEVOURER (USER PROTECTED)
-    Laguea a los demás, pero protege tu celular.
+    Vvv Hub - Miranda FPS Devourer Edition
+    Color: Cyan | Botón: Devourer
 ]]--
 
+local Library = {} -- Simulación de interfaz Vvv Hub
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
-_G.LaggerActive = true
+-- CREACIÓN DE LA INTERFAZ VVV HUB
+local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.Size = UDim2.new(0, 200, 0, 150)
+MainFrame.Position = UDim2.new(0.5, -100, 0.4, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(0, 20, 20)
+MainFrame.BorderSizePixel = 2
+MainFrame.BorderColor3 = Color3.fromRGB(0, 255, 255) -- Color Cyan
 
--- 1. PROTECCIÓN PARA TU CELULAR (Anti-Lag Personal)
-local function protegerMiCelular()
-    -- Desactiva efectos visuales pesados solo en tu pantalla
-    settings().Rendering.QualityLevel = 1
-    for _, v in pairs(Workspace:GetDescendants()) do
-        if v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") then
-            v.Enabled = false
-        end
-    end
-end
+local Title = Instance.new("TextLabel", MainFrame)
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.Text = "VVV HUB"
+Title.TextColor3 = Color3.fromRGB(0, 255, 255) -- Cyan
+Title.BackgroundTransparency = 1
+Title.TextSize = 20
 
--- 2. EL DEVORADOR (Spam de red optimizado)
-local function devourer()
-    if not _G.LaggerActive then return end
-    
-    -- Solo buscamos los objetos clave que vimos en los videos (Collect, Place, Steal)
-    -- Esto evita que tu celular escanee cosas innecesarias
-    for _, v in pairs(Workspace:GetChildren()) do
-        local prompt = v:FindFirstChildWhichIsA("ProximityPrompt", true)
-        if prompt then
-            prompt.HoldDuration = 0
-            -- Enviamos el paquete al servidor (esto es lo que laguea a otros)
-            -- Pero limitamos la cantidad para que tu celular no explote
-            for i = 1, 15 do 
-                fireproximityprompt(prompt)
+-- BOTÓN DEVOURER
+local DevourButton = Instance.new("TextButton", MainFrame)
+DevourButton.Size = UDim2.new(0.8, 0, 0, 40)
+DevourButton.Position = UDim2.new(0.1, 0, 0.4, 0)
+DevourButton.BackgroundColor3 = Color3.fromRGB(0, 40, 40)
+DevourButton.Text = "DEVOURER: OFF"
+DevourButton.TextColor3 = Color3.white
+DevourButton.BorderSizePixel = 0
+
+_G.MirandaActive = false
+local Targets = {"Collect", "Place", "Steal", "Esok Sekolah"}
+
+-- FUNCIÓN DEVOURER (Miranda Style)
+local function startDevouring()
+    while _G.MirandaActive do
+        for _, item in pairs(Workspace:GetChildren()) do
+            local prompt = item:FindFirstChildWhichIsA("ProximityPrompt", true)
+            if prompt then
+                for _, name in pairs(Targets) do
+                    if prompt.ActionText == name or prompt.ObjectText == name then
+                        prompt.HoldDuration = 0
+                        -- Ataque masivo de red (Miranda/Seal Style)
+                        for i = 1, 25 do 
+                            fireproximityprompt(prompt)
+                        end
+                    end
+                end
             end
         end
+        task.wait(0.1) -- Delay de seguridad para que TU celular no explote
     end
 end
 
--- Ejecución
-pcall(protegerMiCelular)
-
--- Usamos Heartbeat pero con un pequeño descanso para que tu CPU respire
-task.spawn(function()
-    while _G.LaggerActive do
-        pcall(devourer)
-        task.wait(0.1) -- El secreto: 0.1s es suficiente para laguear sin crashear TÚ
+-- LÓGICA DEL BOTÓN
+DevourButton.MouseButton1Click:Connect(function()
+    _G.MirandaActive = not _G.MirandaActive
+    if _G.MirandaActive then
+        DevourButton.Text = "DEVOURER: ON"
+        DevourButton.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
+        DevourButton.TextColor3 = Color3.black
+        task.spawn(startDevouring)
+    else
+        DevourButton.Text = "DEVOURER: OFF"
+        DevourButton.BackgroundColor3 = Color3.fromRGB(0, 40, 40)
+        DevourButton.TextColor3 = Color3.white
     end
 end)
-
-game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "SEAL FPS DEVOURER";
-    Text = "PROTECTED MODE: ON";
-    Duration = 5;
-})
