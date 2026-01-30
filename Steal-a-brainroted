@@ -1,97 +1,57 @@
--- Vvv hub - Versión Fix Movimiento
+-- Vvv hub - Versión Auto-Equip Oficial
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
--- Eliminar versión previa
-if game.CoreGui:FindFirstChild("VvvHub_Gui") then
-    game.CoreGui.VvvHub_Gui:Destroy()
+-- (Aquí mantienes todo el código de la UI y movimiento que ya funciona)
+
+-- --- LÓGICA DE AUTO-EQUIPAR OBJETO DEL JUEGO ---
+local nombreDeLaCapa = "Capa Láser" -- Asegúrate de que este sea el nombre exacto en el juego
+
+local function autoEquiparCapa()
+    local backpack = LocalPlayer:FindFirstChild("Backpack")
+    local character = LocalPlayer.Character
+    
+    if character and backpack then
+        -- Buscar la capa en la mochila
+        local capa = backpack:FindFirstChild(nombreDeLaCapa)
+        if capa and capa:IsA("Tool") then
+            character.Humanoid:EquipTool(capa)
+        end
+    end
 end
 
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "VvvHub_Gui"
-ScreenGui.Parent = game.CoreGui
-
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 170, 0, 95)
-MainFrame.Position = UDim2.new(0.5, -85, 0.5, -45)
-MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-MainFrame.BorderSizePixel = 0
-MainFrame.Active = true -- Importante para que detecte el clic
-MainFrame.Parent = ScreenGui
-
--- UI Neón
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(0, 255, 255)
-UIStroke.Thickness = 2.5
-UIStroke.Parent = MainFrame
-
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 10)
-UICorner.Parent = MainFrame
-
-local Title = Instance.new("TextLabel")
-Title.Text = "Vvv hub"
-Title.Size = UDim2.new(1, 0, 0.45, 0)
-Title.BackgroundTransparency = 1
-Title.TextColor3 = Color3.fromRGB(0, 255, 255)
-Title.TextSize = 20
-Title.Font = Enum.Font.GothamBold
-Title.Parent = MainFrame
-
-local ToggleBtn = Instance.new("TextButton")
-ToggleBtn.Text = "CAPA: OFF"
-ToggleBtn.Size = UDim2.new(0.85, 0, 0.35, 0)
-ToggleBtn.Position = UDim2.new(0.075, 0, 0.55, 0)
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-ToggleBtn.TextColor3 = Color3.new(1, 1, 1)
-ToggleBtn.Font = Enum.Font.GothamMedium
-ToggleBtn.Parent = MainFrame
-Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 6)
-
--- --- LÓGICA DE MOVIMIENTO AVANZADA (SOPORTA MÓVIL Y PC) ---
-local dragging, dragInput, dragStart, startPos
-
-local function update(input)
-    local delta = input.Position - dragStart
-    MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+local function desequiparCapa()
+    local character = LocalPlayer.Character
+    if character then
+        local capaEnMano = character:FindFirstChild(nombreDeLaCapa)
+        if capaEnMano then
+            capaEnMano.Parent = LocalPlayer.Backpack
+        end
+    end
 end
 
-MainFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = MainFrame.Position
-        
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
-end)
-
-MainFrame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        dragInput = input
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        update(input)
-    end
-end)
-
--- --- LÓGICA CAPA LÁSER ---
+-- --- ACTUALIZACIÓN DEL BOTÓN TOGGLE ---
 local activa = false
 ToggleBtn.MouseButton1Click:Connect(function()
     activa = not activa
     ToggleBtn.Text = activa and "CAPA: ON" or "CAPA: OFF"
     ToggleBtn.BackgroundColor3 = activa and Color3.fromRGB(0, 100, 100) or Color3.fromRGB(30, 30, 30)
     UIStroke.Color = activa and Color3.fromRGB(255, 0, 255) or Color3.fromRGB(0, 255, 255)
+    
+    if activa then
+        autoEquiparCapa()
+    else
+        desequiparCapa()
+    end
 end)
 
--- (Aquí iría el resto de la función Heartbeat que ya tenemos para el láser)
+-- Bucle para asegurar que siempre esté equipada si se cae o mueres
+RunService.Heartbeat:Connect(function()
+    if activa then
+        local character = LocalPlayer.Character
+        if character and not character:FindFirstChild(nombreDeLaCapa) then
+            autoEquiparCapa()
+        end
+    end
+end)
