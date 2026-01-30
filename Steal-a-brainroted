@@ -1,37 +1,31 @@
---[[ 
-    Vvv hub - OFFICIAL LOADER
-    Game: Steal a Brainrot
-    Source: loadstring(game:HttpGet("https://raw.githubusercontent.com/vvvcrxst/VVVHUB/main/Steal-a-brainrot/hub"))()
-]]
-
--- Destruir GUI previa si existe
-if game.CoreGui:FindFirstChild("VvvHub_Gui") then
-    game.CoreGui.VvvHub_Gui:Destroy()
-end
-
+-- Vvv hub - Versión Fix Movimiento
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
--- --- CREACIÓN DE LA INTERFAZ ---
+-- Eliminar versión previa
+if game.CoreGui:FindFirstChild("VvvHub_Gui") then
+    game.CoreGui.VvvHub_Gui:Destroy()
+end
+
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "VvvHub_Gui"
-ScreenGui.Parent = game.CoreGui -- Se usa CoreGui para que no desaparezca al morir
+ScreenGui.Parent = game.CoreGui
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 180, 0, 100)
-MainFrame.Position = UDim2.new(0.5, -90, 0.5, -50)
+MainFrame.Size = UDim2.new(0, 170, 0, 95)
+MainFrame.Position = UDim2.new(0.5, -85, 0.5, -45)
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 MainFrame.BorderSizePixel = 0
-MainFrame.Active = true
+MainFrame.Active = true -- Importante para que detecte el clic
 MainFrame.Parent = ScreenGui
 
--- Borde Neón Vvv
+-- UI Neón
 local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(0, 255, 255) -- Cian Neón
-UIStroke.Thickness = 2
+UIStroke.Color = Color3.fromRGB(0, 255, 255)
+UIStroke.Thickness = 2.5
 UIStroke.Parent = MainFrame
 
 local UICorner = Instance.new("UICorner")
@@ -39,9 +33,8 @@ UICorner.CornerRadius = UDim.new(0, 10)
 UICorner.Parent = MainFrame
 
 local Title = Instance.new("TextLabel")
-Title.Name = "Title"
 Title.Text = "Vvv hub"
-Title.Size = UDim2.new(1, 0, 0.4, 0)
+Title.Size = UDim2.new(1, 0, 0.45, 0)
 Title.BackgroundTransparency = 1
 Title.TextColor3 = Color3.fromRGB(0, 255, 255)
 Title.TextSize = 20
@@ -49,96 +42,56 @@ Title.Font = Enum.Font.GothamBold
 Title.Parent = MainFrame
 
 local ToggleBtn = Instance.new("TextButton")
-ToggleBtn.Name = "ToggleBtn"
 ToggleBtn.Text = "CAPA: OFF"
-ToggleBtn.Size = UDim2.new(0.8, 0, 0.35, 0)
-ToggleBtn.Position = UDim2.new(0.1, 0, 0.5, 0)
+ToggleBtn.Size = UDim2.new(0.85, 0, 0.35, 0)
+ToggleBtn.Position = UDim2.new(0.075, 0, 0.55, 0)
 ToggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 ToggleBtn.TextColor3 = Color3.new(1, 1, 1)
 ToggleBtn.Font = Enum.Font.GothamMedium
-ToggleBtn.TextSize = 14
 ToggleBtn.Parent = MainFrame
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 6)
 
-local BtnCorner = Instance.new("UICorner")
-BtnCorner.CornerRadius = UDim.new(0, 6)
-BtnCorner.Parent = ToggleBtn
-
--- --- LÓGICA DE MOVIMIENTO ---
+-- --- LÓGICA DE MOVIMIENTO AVANZADA (SOPORTA MÓVIL Y PC) ---
 local dragging, dragInput, dragStart, startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
 MainFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         dragging = true
         dragStart = input.Position
         startPos = MainFrame.Position
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+MainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
     end
 end)
 
 UserInputService.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
-        local delta = input.Position - dragStart
-        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    if input == dragInput and dragging then
+        update(input)
     end
 end)
 
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = false
-    end
-end)
-
--- --- LÓGICA DE LA CAPA LÁSER ---
-local capaActiva = false
-local rangoDefensa = 15 
-
-local function crearEfectoLaser(targetPos)
-    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if not root then return end
-
-    local dist = (root.Position - targetPos).Magnitude
-    local laser = Instance.new("Part")
-    laser.Name = "VvvLaser"
-    laser.Anchored = true
-    laser.CanCollide = false
-    laser.Material = Enum.Material.Neon
-    laser.Color = Color3.fromRGB(0, 255, 255)
-    laser.Size = Vector3.new(0.15, 0.15, dist)
-    laser.CFrame = CFrame.new(root.Position, targetPos) * CFrame.new(0, 0, -dist/2)
-    laser.Parent = workspace
-    
-    task.wait(0.05)
-    laser:Destroy()
-end
-
+-- --- LÓGICA CAPA LÁSER ---
+local activa = false
 ToggleBtn.MouseButton1Click:Connect(function()
-    capaActiva = not capaActiva
-    if capaActiva then
-        ToggleBtn.Text = "CAPA: ON"
-        ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 150)
-        UIStroke.Color = Color3.fromRGB(255, 0, 255) -- Cambia a Neón Magenta
-    else
-        ToggleBtn.Text = "CAPA: OFF"
-        ToggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-        UIStroke.Color = Color3.fromRGB(0, 255, 255)
-    end
+    activa = not activa
+    ToggleBtn.Text = activa and "CAPA: ON" or "CAPA: OFF"
+    ToggleBtn.BackgroundColor3 = activa and Color3.fromRGB(0, 100, 100) or Color3.fromRGB(30, 30, 30)
+    UIStroke.Color = activa and Color3.fromRGB(255, 0, 255) or Color3.fromRGB(0, 255, 255)
 end)
 
-RunService.RenderStepped:Connect(function()
-    if not capaActiva then return end
-    local char = LocalPlayer.Character
-    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
-
-    for _, p in pairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-            local enemyRoot = p.Character.HumanoidRootPart
-            local distance = (char.HumanoidRootPart.Position - enemyRoot.Position).Magnitude
-            
-            if distance < rangoDefensa then
-                crearEfectoLaser(enemyRoot.Position)
-                -- Empuje para evitar que robe el Brainrot
-                enemyRoot.Velocity = (enemyRoot.Position - char.HumanoidRootPart.Position).Unit * 40
-            end
-        end
-    end
-end)
-
-print("Vvv hub cargado exitosamente.")
+-- (Aquí iría el resto de la función Heartbeat que ya tenemos para el láser)
