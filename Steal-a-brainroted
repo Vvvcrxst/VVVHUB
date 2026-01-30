@@ -1,6 +1,6 @@
 --[[ 
-    Vvv PREMIUM - Edición Final y Calibrada
-    Desarrollado con calma para funcionamiento garantizado.
+    Vvv PREMIUM - Edición Guardian Final
+    Calibrado para apuntado preciso al objetivo.
 ]]--
 
 local Players = game:GetService("Players")
@@ -8,14 +8,14 @@ local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
--- Limpieza absoluta de interfaces previas
+-- Limpieza de interfaces previas
 for _, child in pairs(CoreGui:GetChildren()) do
-    if child.Name == "VvvHub_Final" or child.Name == "VvvHub_Gui" then
+    if child.Name == "VvvHub_Final" then
         child:Destroy()
     end
 end
 
--- Interfaz Profesional
+-- Interfaz Premium
 local ScreenGui = Instance.new("ScreenGui", CoreGui)
 ScreenGui.Name = "VvvHub_Final"
 
@@ -52,49 +52,41 @@ ToggleBtn.TextSize = 11
 
 Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 6)
 
--- Lógica Robusta de Equipamiento
+-- Lógica de Apuntado Calibrada
 local activo = false
 
-local function ejecutarCapa()
+local function ejecutarDefensa()
     local char = LocalPlayer.Character
-    if not char or not char:FindFirstChild("Humanoid") then return end
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
     
-    -- Buscamos la capa de forma exhaustiva
-    local tool = nil
-    local busqueda = {LocalPlayer.Backpack, char}
-    
-    for _, lugar in pairs(busqueda) do
-        for _, item in pairs(lugar:GetChildren()) do
-            if item:IsA("Tool") and (item.Name:lower():find("capa") or item.Name:lower():find("laser")) then
-                tool = item
+    local tool = LocalPlayer.Backpack:FindFirstChild("Capa Láser") or char:FindFirstChild("Capa Láser")
+    if not tool then return end
+
+    local objetivo = nil
+    local distanciaCercana = 18 -- Rango de activación
+
+    -- Buscar al jugador más cercano
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+            local dist = (char.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude
+            if dist < distanciaCercana then
+                objetivo = p.Character.HumanoidRootPart
                 break
             end
         end
     end
 
-    if tool then
-        -- Si está en la mochila, la equipamos
-        if tool.Parent ~= char then
-            char.Humanoid:EquipTool(tool)
+    if objetivo then
+        if tool.Parent ~= char then 
+            char.Humanoid:EquipTool(tool) 
         end
         
-        -- Buscamos a alguien cerca para disparar (Defensa)
-        local objetivo = nil
-        for _, p in pairs(Players:GetPlayers()) do
-            if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-                local dist = (char.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude
-                if dist < 18 then -- Rango de defensa
-                    objetivo = p.Character.HumanoidRootPart
-                    break
-                end
-            end
-        end
-
-        if objetivo then
-            -- Mirar al objetivo para que el láser no falle
-            char.HumanoidRootPart.CFrame = CFrame.new(char.HumanoidRootPart.Position, Vector3.new(objetivo.Position.X, char.HumanoidRootPart.Position.Y, objetivo.Position.Z))
-            tool:Activate()
-        end
+        -- APUNTADO PRECISO: El personaje gira para mirar directamente al torso del objetivo
+        -- Esto evita que el láser apunte al piso
+        local targetPos = objetivo.Position
+        char.HumanoidRootPart.CFrame = CFrame.new(char.HumanoidRootPart.Position, Vector3.new(targetPos.X, targetPos.Y, targetPos.Z))
+        
+        tool:Activate()
     end
 end
 
@@ -104,12 +96,11 @@ ToggleBtn.MouseButton1Click:Connect(function()
     ToggleBtn.BackgroundColor3 = activo and Color3.fromRGB(0, 150, 150) or Color3.fromRGB(25, 25, 25)
 end)
 
--- Usamos task.wait para no saturar el móvil
 task.spawn(function()
     while true do
         if activo then
-            ejecutarCapa()
+            ejecutarDefensa()
         end
-        task.wait(0.1)
+        task.wait(0.05) -- Mayor frecuencia para seguimiento en tiempo real
     end
 end)
