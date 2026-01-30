@@ -1,122 +1,115 @@
 --[[ 
-    ✨ Vvv Hub - PREMIUM EDITION (V2) ✨
-    Status: Ultra-Defense / Wall-Penetrate
+    Vvv PREMIUM - Edición Final y Calibrada
+    Desarrollado con calma para funcionamiento garantizado.
 ]]--
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
-local StarterGui = game:GetService("StarterGui")
 local LocalPlayer = Players.LocalPlayer
 
--- Notificación de Inicio
-StarterGui:SetCore("SendNotification", {
-    Title = "✨ Vvv Hub ✨";
-    Text = "Defensa Inteligente Lista";
-    Duration = 3;
-})
-
-if CoreGui:FindFirstChild("VvvHub_Premium") then
-    CoreGui.VvvHub_Premium:Destroy()
+-- Limpieza absoluta de interfaces previas
+for _, child in pairs(CoreGui:GetChildren()) do
+    if child.Name == "VvvHub_Final" or child.Name == "VvvHub_Gui" then
+        child:Destroy()
+    end
 end
 
--- Interfaz (Igual a la de tu video)
+-- Interfaz Profesional
 local ScreenGui = Instance.new("ScreenGui", CoreGui)
-ScreenGui.Name = "VvvHub_Premium"
+ScreenGui.Name = "VvvHub_Final"
 
 local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.Size = UDim2.new(0, 160, 0, 95)
-MainFrame.Position = UDim2.new(0.5, -80, 0.15, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
+MainFrame.Position = UDim2.new(0.5, -80, 0.2, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 12)
 MainFrame.Active = true
 MainFrame.Draggable = true
 
-local Corner = Instance.new("UICorner", MainFrame)
-Corner.CornerRadius = UDim.new(0, 12)
+local UIStroke = Instance.new("UIStroke", MainFrame)
+UIStroke.Color = Color3.fromRGB(0, 255, 255)
+UIStroke.Thickness = 2
 
-local Stroke = Instance.new("UIStroke", MainFrame)
-Stroke.Color = Color3.fromRGB(0, 255, 255)
-Stroke.Thickness = 2.5
+local UICorner = Instance.new("UICorner", MainFrame)
+UICorner.CornerRadius = UDim.new(0, 10)
 
 local Title = Instance.new("TextLabel", MainFrame)
 Title.Text = "Vvv PREMIUM"
 Title.Size = UDim2.new(1, 0, 0.4, 0)
-Title.BackgroundTransparency = 1
 Title.TextColor3 = Color3.fromRGB(0, 255, 255)
-Title.Font = Enum.Font.GothamBlack
-Title.TextSize = 15
+Title.Font = Enum.Font.GothamBold
+Title.BackgroundTransparency = 1
+Title.TextSize = 14
 
 local ToggleBtn = Instance.new("TextButton", MainFrame)
-ToggleBtn.Text = "DEFENSA: OFF"
+ToggleBtn.Text = "SISTEMA: OFF"
 ToggleBtn.Size = UDim2.new(0.85, 0, 0.4, 0)
 ToggleBtn.Position = UDim2.new(0.075, 0, 0.5, 0)
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 ToggleBtn.TextColor3 = Color3.new(1, 1, 1)
 ToggleBtn.Font = Enum.Font.GothamBold
-ToggleBtn.TextSize = 12
+ToggleBtn.TextSize = 11
 
-local BtnCorner = Instance.new("UICorner", ToggleBtn)
-BtnCorner.CornerRadius = UDim.new(0, 8)
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 6)
 
--- LÓGICA DE ATAQUE MEJORADA
-local active = false
+-- Lógica Robusta de Equipamiento
+local activo = false
 
-local function autoDefensa()
+local function ejecutarCapa()
     local char = LocalPlayer.Character
-    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+    if not char or not char:FindFirstChild("Humanoid") then return end
     
-    -- Busca la capa
-    local tool = LocalPlayer.Backpack:FindFirstChild("Capa Láser") or char:FindFirstChild("Capa Láser")
-    if not tool then return end
-
-    local objetivo = nil
-    local radioDefensa = 18 -- Aumentamos un poco el rango
-
-    for _, p in pairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-            local dist = (char.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude
-            if dist < radioDefensa then
-                objetivo = p.Character.HumanoidRootPart
+    -- Buscamos la capa de forma exhaustiva
+    local tool = nil
+    local busqueda = {LocalPlayer.Backpack, char}
+    
+    for _, lugar in pairs(busqueda) do
+        for _, item in pairs(lugar:GetChildren()) do
+            if item:IsA("Tool") and (item.Name:lower():find("capa") or item.Name:lower():find("laser")) then
+                tool = item
                 break
             end
         end
     end
 
-    if objetivo then
-        if tool.Parent ~= char then 
-            char.Humanoid:EquipTool(tool) 
+    if tool then
+        -- Si está en la mochila, la equipamos
+        if tool.Parent ~= char then
+            char.Humanoid:EquipTool(tool)
         end
         
-        -- APUNTADO AGRESIVO: Forzamos la mirada al enemigo
-        char.HumanoidRootPart.CFrame = CFrame.new(char.HumanoidRootPart.Position, Vector3.new(objetivo.Position.X, char.HumanoidRootPart.Position.Y, objetivo.Position.Z))
-        
-        -- DISPARO CONTINUO: Activamos varias veces para asegurar el hit
-        tool:Activate()
-        
-        -- Si el juego usa un RemoteEvent para el daño, intentamos dispararlo
-        local remote = tool:FindFirstChildOfClass("RemoteEvent") or tool:FindFirstChild("Remote")
-        if remote then
-            remote:FireServer(objetivo.Position)
+        -- Buscamos a alguien cerca para disparar (Defensa)
+        local objetivo = nil
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                local dist = (char.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude
+                if dist < 18 then -- Rango de defensa
+                    objetivo = p.Character.HumanoidRootPart
+                    break
+                end
+            end
+        end
+
+        if objetivo then
+            -- Mirar al objetivo para que el láser no falle
+            char.HumanoidRootPart.CFrame = CFrame.new(char.HumanoidRootPart.Position, Vector3.new(objetivo.Position.X, char.HumanoidRootPart.Position.Y, objetivo.Position.Z))
+            tool:Activate()
         end
     end
 end
 
 ToggleBtn.MouseButton1Click:Connect(function()
-    active = not active
-    ToggleBtn.Text = active and "DEFENSA: ON" or "DEFENSA: OFF"
-    ToggleBtn.BackgroundColor3 = active and Color3.fromRGB(0, 180, 150) or Color3.fromRGB(30, 30, 35)
-    
-    if active then
-        StarterGui:SetCore("SendNotification", {
-            Title = "Vvv Hub";
-            Text = "Modo Guardián Activado";
-            Duration = 2;
-        })
-    end
+    activo = not activo
+    ToggleBtn.Text = activo and "SISTEMA: ON" or "SISTEMA: OFF"
+    ToggleBtn.BackgroundColor3 = activo and Color3.fromRGB(0, 150, 150) or Color3.fromRGB(25, 25, 25)
 end)
 
-RunService.Heartbeat:Connect(function()
-    if active then
-        autoDefensa()
+-- Usamos task.wait para no saturar el móvil
+task.spawn(function()
+    while true do
+        if activo then
+            ejecutarCapa()
+        end
+        task.wait(0.1)
     end
 end)
