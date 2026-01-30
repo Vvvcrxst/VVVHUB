@@ -1,41 +1,123 @@
--- Vvv hub OFFICIAL - VERSION DEFINITIVA
+--[[ Vvv Hub OFFICIAL - PREMIUM MOBILE VERSION ]]--
 local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
+local StarterGui = game:GetService("StarterGui")
 local LocalPlayer = Players.LocalPlayer
 
--- (Aquí va tu código de la UI que ya vimos que funciona)
+-- 1. Notificación de Carga (Para saber si GitHub lo leyó)
+StarterGui:SetCore("SendNotification", {
+    Title = "Vvv Hub";
+    Text = "Script cargado correctamente.";
+    Duration = 5;
+})
 
--- --- LÓGICA DE FUERZA BRUTA ---
-local activa = false
+-- 2. Limpieza (Borra el viejo si existe)
+if CoreGui:FindFirstChild("VvvHub_Mobile") then
+    CoreGui.VvvHub_Mobile:Destroy()
+end
 
-local function equiparYa()
-    local char = LocalPlayer.Character
-    if not char or not char:FindFirstChild("Humanoid") then return end
+-- 3. Interfaz Gráfica Profesional
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "VvvHub_Mobile"
+ScreenGui.Parent = CoreGui
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-    -- Buscamos en Mochila y en el Personaje por si acaso
-    for _, item in pairs(LocalPlayer.Backpack:GetChildren()) do
-        if item:IsA("Tool") and (item.Name:find("Capa") or item.Name:find("Laser")) then
-            char.Humanoid:EquipTool(item)
-            item:Activate()
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 160, 0, 90) -- Tamaño perfecto para pulgares
+MainFrame.Position = UDim2.new(0.5, -80, 0.15, 0) -- Arriba al centro
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true -- Se puede mover
+MainFrame.Parent = ScreenGui
+
+-- Bordes Neón
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Color = Color3.fromRGB(0, 255, 255) -- Cian brillante
+UIStroke.Thickness = 2
+UIStroke.Parent = MainFrame
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 12)
+UICorner.Parent = MainFrame
+
+-- Título con Brillo
+local Title = Instance.new("TextLabel")
+Title.Text = "✨ Vvv Hub ✨"
+Title.Size = UDim2.new(1, 0, 0.35, 0)
+Title.BackgroundTransparency = 1
+Title.TextColor3 = Color3.fromRGB(0, 255, 255)
+Title.Font = Enum.Font.GothamBlack
+Title.TextSize = 16
+Title.Parent = MainFrame
+
+-- Botón Interactivo
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Name = "Toggle"
+ToggleBtn.Text = "CAPA: OFF"
+ToggleBtn.Size = UDim2.new(0.8, 0, 0.45, 0)
+ToggleBtn.Position = UDim2.new(0.1, 0, 0.45, 0)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+ToggleBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.TextSize = 14
+ToggleBtn.Parent = MainFrame
+
+local BtnCorner = Instance.new("UICorner")
+BtnCorner.CornerRadius = UDim.new(0, 8)
+BtnCorner.Parent = ToggleBtn
+
+-- 4. Lógica de Rastreo de Capa (Indestructible)
+local active = false
+
+local function activarCapaLogic()
+    pcall(function() -- 'pcall' evita que el script se rompa si hay error
+        local char = LocalPlayer.Character
+        if not char then return end
+        
+        local items = {}
+        -- Escanea Mochila
+        if LocalPlayer.Backpack then
+            for _, v in pairs(LocalPlayer.Backpack:GetChildren()) do table.insert(items, v) end
         end
-    end
+        -- Escanea Mano
+        for _, v in pairs(char:GetChildren()) do table.insert(items, v) end
+
+        for _, tool in pairs(items) do
+            if tool:IsA("Tool") then
+                local nombre = tool.Name:lower()
+                -- Palabras clave flexibles
+                if nombre:find("capa") or nombre:find("laser") or nombre:find("cape") then
+                    if tool.Parent ~= char then
+                        char.Humanoid:EquipTool(tool)
+                    end
+                    tool:Activate()
+                    break -- Deja de buscar si ya encontró una
+                end
+            end
+        end
+    end)
 end
 
 ToggleBtn.MouseButton1Click:Connect(function()
-    activa = not activa
-    ToggleBtn.Text = activa and "CAPA: ON" or "CAPA: OFF"
-    ToggleBtn.BackgroundColor3 = activa and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(30, 30, 30)
-    
-    if activa then
-        equiparYa()
+    active = not active
+    if active then
+        ToggleBtn.Text = "CAPA: ON"
+        ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100) -- Verde Neón
+        activarCapaLogic()
+    else
+        ToggleBtn.Text = "CAPA: OFF"
+        ToggleBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35) -- Gris oscuro
     end
 end)
 
--- Si el juego te la intenta quitar, el script la vuelve a poner cada segundo
-task.spawn(function()
-    while task.wait(1) do
-        if activa then
-            equiparYa()
-        end
+-- Bucle de Seguridad (Mantiene la capa puesta)
+RunService.Heartbeat:Connect(function()
+    if active then
+        activarCapaLogic()
     end
 end)
