@@ -1,72 +1,46 @@
 --[[ 
-    Vvv Hub - Miranda FPS Devourer Edition
-    Color: Cyan | Botón: Devourer
+    Vvv HUB - CLONE & EQUIP ALL EDITION
+    Color: Purple Neon | Draggable | Mass Equip
 ]]--
 
-local Library = {} -- Simulación de interfaz Vvv Hub
+local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
 
--- CREACIÓN DE LA INTERFAZ VVV HUB
-local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
-local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 200, 0, 150)
-MainFrame.Position = UDim2.new(0.5, -100, 0.4, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(0, 20, 20)
-MainFrame.BorderSizePixel = 2
-MainFrame.BorderColor3 = Color3.fromRGB(0, 255, 255) -- Color Cyan
+-- --- CONFIGURACIÓN DE INTERFAZ (UI) ---
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "VvvHubPurple"
+ScreenGui.Parent = game:GetService("CoreGui")
 
-local Title = Instance.new("TextLabel", MainFrame)
-Title.Size = UDim2.new(1, 0, 0, 30)
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 220, 0, 140)
+MainFrame.Position = UDim2.new(0.5, -110, 0.4, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 0, 60) -- Fondo Morado Oscuro
+MainFrame.BorderSizePixel = 3
+MainFrame.BorderColor3 = Color3.fromRGB(180, 0, 255) -- Borde Morado Vivo (Neón)
+MainFrame.Parent = ScreenGui
+
+-- Título
+local Title = Instance.new("TextLabel")
 Title.Text = "VVV HUB"
-Title.TextColor3 = Color3.fromRGB(0, 255, 255) -- Cyan
+Title.Size = UDim2.new(1, 0, 0, 30)
 Title.BackgroundTransparency = 1
-Title.TextSize = 20
+Title.TextColor3 = Color3.fromRGB(220, 100, 255) -- Texto Morado Claro
+Title.TextSize = 22
+Title.Font = Enum.Font.FredokaOne
+Title.Parent = MainFrame
 
--- BOTÓN DEVOURER
-local DevourButton = Instance.new("TextButton", MainFrame)
-DevourButton.Size = UDim2.new(0.8, 0, 0, 40)
-DevourButton.Position = UDim2.new(0.1, 0, 0.4, 0)
-DevourButton.BackgroundColor3 = Color3.fromRGB(0, 40, 40)
-DevourButton.Text = "DEVOURER: OFF"
-DevourButton.TextColor3 = Color3.white
-DevourButton.BorderSizePixel = 0
+-- Botón Principal
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Size = UDim2.new(0.8, 0, 0.4, 0)
+ToggleButton.Position = UDim2.new(0.1, 0, 0.4, 0)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(80, 0, 120) -- Morado Apagado
+ToggleButton.Text = "CLON MODE: OFF"
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.TextSize = 18
+ToggleButton.Font = Enum.Font.SourceSansBold
+ToggleButton.Parent = MainFrame
 
-_G.MirandaActive = false
-local Targets = {"Collect", "Place", "Steal", "Esok Sekolah"}
-
--- FUNCIÓN DEVOURER (Miranda Style)
-local function startDevouring()
-    while _G.MirandaActive do
-        for _, item in pairs(Workspace:GetChildren()) do
-            local prompt = item:FindFirstChildWhichIsA("ProximityPrompt", true)
-            if prompt then
-                for _, name in pairs(Targets) do
-                    if prompt.ActionText == name or prompt.ObjectText == name then
-                        prompt.HoldDuration = 0
-                        -- Ataque masivo de red (Miranda/Seal Style)
-                        for i = 1, 25 do 
-                            fireproximityprompt(prompt)
-                        end
-                    end
-                end
-            end
-        end
-        task.wait(0.1) -- Delay de seguridad para que TU celular no explote
-    end
-end
-
--- LÓGICA DEL BOTÓN
-DevourButton.MouseButton1Click:Connect(function()
-    _G.MirandaActive = not _G.MirandaActive
-    if _G.MirandaActive then
-        DevourButton.Text = "DEVOURER: ON"
-        DevourButton.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
-        DevourButton.TextColor3 = Color3.black
-        task.spawn(startDevouring)
-    else
-        DevourButton.Text = "DEVOURER: OFF"
-        DevourButton.BackgroundColor3 = Color3.fromRGB(0, 40, 40)
-        DevourButton.TextColor3 = Color3.white
-    end
-end)
+-- --- LÓGICA DE ARRASTRE (DRAGGABLE)
