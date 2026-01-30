@@ -1,6 +1,6 @@
 --[[ 
-    ✨ Vvv Hub - PREMIUM EDITION ✨
-    Status: Undetected / Intelligent Defense
+    ✨ Vvv Hub - PREMIUM EDITION (V2) ✨
+    Status: Ultra-Defense / Wall-Penetrate
 ]]--
 
 local Players = game:GetService("Players")
@@ -9,20 +9,18 @@ local CoreGui = game:GetService("CoreGui")
 local StarterGui = game:GetService("StarterGui")
 local LocalPlayer = Players.LocalPlayer
 
--- 1. Notificación de Entrada
+-- Notificación de Inicio
 StarterGui:SetCore("SendNotification", {
     Title = "✨ Vvv Hub ✨";
-    Text = "Versión Premium Cargada";
-    Duration = 4;
-    Icon = "rbxassetid://6023426926"
+    Text = "Defensa Inteligente Lista";
+    Duration = 3;
 })
 
--- 2. Limpieza de Interfaz
 if CoreGui:FindFirstChild("VvvHub_Premium") then
     CoreGui.VvvHub_Premium:Destroy()
 end
 
--- 3. Interfaz de Usuario (UI)
+-- Interfaz (Igual a la de tu video)
 local ScreenGui = Instance.new("ScreenGui", CoreGui)
 ScreenGui.Name = "VvvHub_Premium"
 
@@ -60,21 +58,20 @@ ToggleBtn.TextSize = 12
 local BtnCorner = Instance.new("UICorner", ToggleBtn)
 BtnCorner.CornerRadius = UDim.new(0, 8)
 
--- 4. Lógica de Defensa Inteligente (Anti-Spam)
+-- LÓGICA DE ATAQUE MEJORADA
 local active = false
 
 local function autoDefensa()
     local char = LocalPlayer.Character
     if not char or not char:FindFirstChild("HumanoidRootPart") then return end
     
-    -- Busca la capa en mochila o mano
+    -- Busca la capa
     local tool = LocalPlayer.Backpack:FindFirstChild("Capa Láser") or char:FindFirstChild("Capa Láser")
     if not tool then return end
 
     local objetivo = nil
-    local radioDefensa = 16 -- Distancia en la que se activa
+    local radioDefensa = 18 -- Aumentamos un poco el rango
 
-    -- Detectar ladrones cerca
     for _, p in pairs(Players:GetPlayers()) do
         if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
             local dist = (char.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude
@@ -85,18 +82,25 @@ local function autoDefensa()
         end
     end
 
-    -- Si hay alguien cerca, activa la capa y apunta
     if objetivo then
         if tool.Parent ~= char then 
             char.Humanoid:EquipTool(tool) 
         end
-        -- Giro instantáneo hacia el ladrón (atraviesa paredes)
+        
+        -- APUNTADO AGRESIVO: Forzamos la mirada al enemigo
         char.HumanoidRootPart.CFrame = CFrame.new(char.HumanoidRootPart.Position, Vector3.new(objetivo.Position.X, char.HumanoidRootPart.Position.Y, objetivo.Position.Z))
+        
+        -- DISPARO CONTINUO: Activamos varias veces para asegurar el hit
         tool:Activate()
+        
+        -- Si el juego usa un RemoteEvent para el daño, intentamos dispararlo
+        local remote = tool:FindFirstChildOfClass("RemoteEvent") or tool:FindFirstChild("Remote")
+        if remote then
+            remote:FireServer(objetivo.Position)
+        end
     end
 end
 
--- Botón Toggle
 ToggleBtn.MouseButton1Click:Connect(function()
     active = not active
     ToggleBtn.Text = active and "DEFENSA: ON" or "DEFENSA: OFF"
@@ -111,7 +115,6 @@ ToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Bucle de ejecución
 RunService.Heartbeat:Connect(function()
     if active then
         autoDefensa()
