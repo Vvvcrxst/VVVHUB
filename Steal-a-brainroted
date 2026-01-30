@@ -43,4 +43,101 @@ ToggleButton.TextSize = 18
 ToggleButton.Font = Enum.Font.SourceSansBold
 ToggleButton.Parent = MainFrame
 
--- --- LÓGICA DE ARRASTRE (DRAGGABLE)
+-- --- LÓGICA DE ARRASTRE (DRAGGABLE) ---
+local dragging, dragInput, dragStart, startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+MainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
+
+-- --- LÓGICA DEL SCRIPT (CLON / EQUIP ALL) ---
+local active = false
+
+local function equipAllTools()
+    local char = LocalPlayer.Character
+    local backpack = LocalPlayer.Backpack
+    
+    if char and backpack then
+        -- Mueve todo del inventario a la mano (simulando el clon con objetos)
+        for _, tool in pairs(backpack:GetChildren()) do
+            if tool:IsA("Tool") then
+                tool.Parent = char
+            end
+        end
+    end
+end
+
+-- Bucle rápido para mantener los objetos equipados
+task.spawn(function()
+    while true do
+        if active then
+            equipAllTools()
+        end
+        task.wait(0.1) -- Velocidad segura para no crashear
+    end
+end)
+
+-- Evento del Botón
+ToggleButton.MouseButton1Click:Connect(function()
+    active = not active
+    
+    if active then
+        -- ESTADO: ON
+        ToggleButton.Text = "CLON MODE: ON"
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(180, 0, 255) -- Morado Vivo Brillante
+        ToggleButton.TextColor3 = Color3.fromRGB(0, 0, 0) -- Texto Negro para contraste
+        
+        -- Efecto visual extra: Crear un "Clon" estático (opcional, solo visual)
+        pcall(function()
+            LocalPlayer.Character.Archivable = true
+            local clone = LocalPlayer.Character:Clone()
+            clone.Parent = game.Workspace
+            clone.Name = "Clon Visual"
+            -- Mover el clon un poco al lado
+            clone:SetPrimaryPartCFrame(LocalPlayer.Character.PrimaryPart.CFrame * CFrame.new(3, 0, 0))
+        end)
+        
+    else
+        -- ESTADO: OFF
+        ToggleButton.Text = "CLON MODE: OFF"
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(80, 0, 120)
+        ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        
+        -- Guardar herramientas de vuelta (opcional)
+        local char = LocalPlayer.Character
+        if char then
+            for _, tool in pairs(char:GetChildren()) do
+                if tool:IsA("Tool") then
+                    tool.Parent = LocalPlayer.Backpack
+                end
+            end
+        end
+    end
+end)
