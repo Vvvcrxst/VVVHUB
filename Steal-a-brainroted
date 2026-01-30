@@ -1,123 +1,54 @@
---[[ Vvv Hub OFFICIAL - PREMIUM MOBILE VERSION ]]--
 local Players = game:GetService("Players")
-local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
-local StarterGui = game:GetService("StarterGui")
 local LocalPlayer = Players.LocalPlayer
+local CoreGui = game:GetService("CoreGui")
 
--- 1. Notificación de Carga (Para saber si GitHub lo leyó)
-StarterGui:SetCore("SendNotification", {
-    Title = "Vvv Hub";
-    Text = "Script cargado correctamente.";
-    Duration = 5;
-})
+-- (Tu interfaz neón profesional aquí...)
 
--- 2. Limpieza (Borra el viejo si existe)
-if CoreGui:FindFirstChild("VvvHub_Mobile") then
-    CoreGui.VvvHub_Mobile:Destroy()
-end
+local activa = false
+local rangoDefensa = 15 -- Distancia para activar el láser
 
--- 3. Interfaz Gráfica Profesional
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "VvvHub_Mobile"
-ScreenGui.Parent = CoreGui
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 160, 0, 90) -- Tamaño perfecto para pulgares
-MainFrame.Position = UDim2.new(0.5, -80, 0.15, 0) -- Arriba al centro
-MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-MainFrame.BorderSizePixel = 0
-MainFrame.Active = true
-MainFrame.Draggable = true -- Se puede mover
-MainFrame.Parent = ScreenGui
-
--- Bordes Neón
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(0, 255, 255) -- Cian brillante
-UIStroke.Thickness = 2
-UIStroke.Parent = MainFrame
-
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 12)
-UICorner.Parent = MainFrame
-
--- Título con Brillo
-local Title = Instance.new("TextLabel")
-Title.Text = "✨ Vvv Hub ✨"
-Title.Size = UDim2.new(1, 0, 0.35, 0)
-Title.BackgroundTransparency = 1
-Title.TextColor3 = Color3.fromRGB(0, 255, 255)
-Title.Font = Enum.Font.GothamBlack
-Title.TextSize = 16
-Title.Parent = MainFrame
-
--- Botón Interactivo
-local ToggleBtn = Instance.new("TextButton")
-ToggleBtn.Name = "Toggle"
-ToggleBtn.Text = "CAPA: OFF"
-ToggleBtn.Size = UDim2.new(0.8, 0, 0.45, 0)
-ToggleBtn.Position = UDim2.new(0.1, 0, 0.45, 0)
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-ToggleBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
-ToggleBtn.Font = Enum.Font.GothamBold
-ToggleBtn.TextSize = 14
-ToggleBtn.Parent = MainFrame
-
-local BtnCorner = Instance.new("UICorner")
-BtnCorner.CornerRadius = UDim.new(0, 8)
-BtnCorner.Parent = ToggleBtn
-
--- 4. Lógica de Rastreo de Capa (Indestructible)
-local active = false
-
-local function activarCapaLogic()
-    pcall(function() -- 'pcall' evita que el script se rompa si hay error
-        local char = LocalPlayer.Character
-        if not char then return end
-        
-        local items = {}
-        -- Escanea Mochila
-        if LocalPlayer.Backpack then
-            for _, v in pairs(LocalPlayer.Backpack:GetChildren()) do table.insert(items, v) end
-        end
-        -- Escanea Mano
-        for _, v in pairs(char:GetChildren()) do table.insert(items, v) end
-
-        for _, tool in pairs(items) do
-            if tool:IsA("Tool") then
-                local nombre = tool.Name:lower()
-                -- Palabras clave flexibles
-                if nombre:find("capa") or nombre:find("laser") or nombre:find("cape") then
-                    if tool.Parent ~= char then
-                        char.Humanoid:EquipTool(tool)
-                    end
-                    tool:Activate()
-                    break -- Deja de buscar si ya encontró una
-                end
+local function obtenerLadrones()
+    local enemigos = {}
+    local miBrainrot = workspace:FindFirstChild(LocalPlayer.Name .. "s_Brainrot") -- Cambia esto al nombre real del objeto en el juego
+    
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+            -- Si no sabemos el nombre del Brainrot, defendemos el área alrededor de TU personaje
+            local puntoAProteger = miBrainrot or LocalPlayer.Character.HumanoidRootPart
+            local distancia = (p.Character.HumanoidRootPart.Position - puntoAProteger.Position).Magnitude
+            
+            if distancia < rangoDefensa then
+                table.insert(enemigos, p.Character.HumanoidRootPart)
             end
         end
-    end)
+    end
+    return enemigos
 end
 
-ToggleBtn.MouseButton1Click:Connect(function()
-    active = not active
-    if active then
-        ToggleBtn.Text = "CAPA: ON"
-        ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100) -- Verde Neón
-        activarCapaLogic()
-    else
-        ToggleBtn.Text = "CAPA: OFF"
-        ToggleBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
-        ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35) -- Gris oscuro
+local function defensaInteligente()
+    local ladrones = obtenerLadrones()
+    local char = LocalPlayer.Character
+    if #ladrones > 0 and char then
+        local tool = LocalPlayer.Backpack:FindFirstChild("Capa Láser") or char:FindFirstChild("Capa Láser")
+        
+        if tool then
+            if tool.Parent ~= char then
+                char.Humanoid:EquipTool(tool)
+            end
+            
+            -- APUNTADO AUTOMÁTICO (Incluso tras las paredes)
+            local objetivo = ladrones[1].Position
+            char.HumanoidRootPart.CFrame = CFrame.new(char.HumanoidRootPart.Position, Vector3.new(objetivo.X, char.HumanoidRootPart.Position.Y, objetivo.Z))
+            
+            tool:Activate() -- Solo dispara si hay alguien cerca
+        end
     end
-end)
+end
 
--- Bucle de Seguridad (Mantiene la capa puesta)
+-- Bucle controlado (Menos spam, más precisión)
 RunService.Heartbeat:Connect(function()
-    if active then
-        activarCapaLogic()
+    if activa then
+        defensaInteligente()
     end
 end)
