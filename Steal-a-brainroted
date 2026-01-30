@@ -1,45 +1,48 @@
 --[[ 
-    Vvv PREMIUM - Insta-Collect Edition
-    Optimizado para recolectar ítems de "Steal a Brainrot" al instante.
+    Vvv PREMIUM - Insta-Collect OPTIMIZADO
+    Sin Lag - Respuesta Instantánea
 ]]--
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
--- Ajustes de velocidad extrema
 _G.AutoCollect = true
-_G.Range = 100 -- Rango de escaneo (puedes subirlo más)
 
-local function collectBrainrot()
+-- Función de recolección optimizada
+local function safeCollect()
     if not _G.AutoCollect then return end
     
     local char = LocalPlayer.Character
     if not char or not char:FindFirstChild("HumanoidRootPart") then return end
 
-    -- Buscamos los stands y objetos de recolección en el Workspace
-    for _, obj in pairs(game.Workspace:GetDescendants()) do
-        
-        -- Opción A: Si usa ProximityPrompt (el icono de la mano que se ve en el video)
-        if obj:IsA("ProximityPrompt") then
-            -- Forzamos la activación sin importar la distancia o el tiempo de espera
-            obj.HoldDuration = 0 
-            fireproximityprompt(obj)
-        
-        -- Opción B: Si el objeto se recolecta al tocarlo
-        elseif obj.Name == "Collect" or obj.Name == "Brainrot" or obj.Name == "BrainrotItem" then
-            if obj:IsA("BasePart") then
-                firetouchinterest(char.HumanoidRootPart, obj, 0)
-                task.wait()
-                firetouchinterest(char.HumanoidRootPart, obj, 1)
+    -- En lugar de buscar en todo el juego, buscamos cerca del jugador
+    -- Esto elimina el lag por completo
+    local root = char.HumanoidRootPart
+    
+    for _, obj in pairs(game.Workspace:GetChildren()) do
+        -- Buscamos específicamente modelos o partes que tengan el prompt
+        if obj:IsA("Model") or obj:IsA("Part") then
+            local prompt = obj:FindFirstChildWhichIsA("ProximityPrompt", true)
+            if prompt then
+                -- Solo actúa si está en un rango razonable (evita procesar cosas inútiles)
+                local partPos = obj:IsA("Model") and obj:GetModelCFrame().Position or obj.Position
+                if (root.Position - partPos).Magnitude < 30 then
+                    prompt.HoldDuration = 0
+                    fireproximityprompt(prompt)
+                end
             end
         end
     end
 end
 
--- Ejecución en cada frame para que sea "Al Instante"
-RunService.Stepped:Connect(function()
-    collectBrainrot()
+-- Lo ejecutamos cada 0.1 segundos (sigue siendo muy rápido pero NO da lag)
+task.spawn(function()
+    while true do
+        pcall(safeCollect)
+        task.wait(0.1)
+    end
 end)
 
-print("Vvv PREMIUM: Modo Aspiradora de Brainrots activado.")
+-- INTEGRACIÓN DE INTERFAZ (Tu menú de ayer)
+-- [Aquí va el código de la GUI que ya tenías para que se vea el menú]
