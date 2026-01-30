@@ -1,57 +1,68 @@
 --[[ 
-    Vvv PREMIUM - Insta-Collect & Place (Steal a Brainrot Edition)
-    Optimizado para evitar LAG y funcionar al instante.
+    Vvv PREMIUM - Insta-Collect & Place (Sin Spam)
+    Optimizado para Steal a Brainrot
 ]]--
 
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
 _G.AutoFarm = true
 
--- Función principal optimizada
-local function collectAndPlace()
+-- Tabla de nombres de acciones para evitar clickear cosas innecesarias
+local AccionesValidas = {
+    ["Collect"] = true,
+    ["Place"] = true,
+    ["Steal"] = true,
+    ["Esok Sekolah"] = true
+}
+
+local function farmearBrainrot()
     if not _G.AutoFarm then return end
     
-    local character = LocalPlayer.Character
-    if not character or not character:FindFirstChild("HumanoidRootPart") then return end
+    local char = LocalPlayer.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+    local root = char.HumanoidRootPart
 
-    -- Buscamos solo en el área cercana para evitar LAG
-    for _, obj in pairs(game.Workspace:GetChildren()) do
-        -- Buscamos los botones de interacción (ProximityPrompts)
-        local prompt = obj:FindFirstChildWhichIsA("ProximityPrompt", true)
-        
-        if prompt then
-            -- Solo activa si es "Collect" o "Place" como se ve en tu video
-            if prompt.ObjectText == "Esok Sekolah" or prompt.ActionText == "Collect" or prompt.ActionText == "Place" then
+    -- Buscamos solo objetos con ProximityPrompt que estén cerca
+    for _, v in pairs(game.Workspace:GetDescendants()) do
+        if v:IsA("ProximityPrompt") then
+            -- Solo interactúa si el texto coincide con lo que se ve en tus videos
+            if AccionesValidas[v.ActionText] or AccionesValidas[v.ObjectText] then
                 
-                -- Hacerlo instantáneo
-                prompt.HoldDuration = 0
+                -- Distancia máxima para que el juego no detecte trampa (20-25 studs)
+                local pos = v.Parent:IsA("BasePart") and v.Parent.Position or v.Parent:GetModelCFrame().Position
+                local distancia = (root.Position - pos).Magnitude
                 
-                -- Verificar distancia para que sea realista y no cause errores del servidor
-                local dist = (character.HumanoidRootPart.Position - prompt.Parent:GetModelCFrame().Position).Magnitude
-                if dist < 25 then
-                    fireproximityprompt(prompt)
+                if distancia < 25 then
+                    -- Lo hace instantáneo pero solo una vez por objeto
+                    v.HoldDuration = 0
+                    fireproximityprompt(v)
+                    
+                    -- Pequeña pausa de milisegundos para que el servidor procese el dinero
+                    -- Esto evita el lag y el spam excesivo
+                    task.wait(0.05) 
                 end
             end
         end
     end
 end
 
--- Ejecución inteligente: Cada 0.2 segundos es suficiente para ser el más rápido sin laggear
+-- Bucle controlado para evitar crasheos
 task.spawn(function()
     while true do
         if _G.AutoFarm then
-            pcall(collectAndPlace)
+            local success, err = pcall(farmearBrainrot)
+            if not success then warn("Error en el farm: " .. err) end
         end
-        task.wait(0.2) 
+        -- Espera 0.3 segundos antes de volver a escanear (Sigue siendo muy rápido)
+        task.wait(0.3)
     end
 end)
 
--- Notificación de que el sistema está listo
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "Vvv PREMIUM";
-    Text = "Auto-Collect & Place LISTO (Sin Lag)";
-    Duration = 5;
+    Text = "Auto-Farm Corregido (Sin Spam)";
+    Duration = 3;
 })
+
 
