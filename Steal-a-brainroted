@@ -1,6 +1,6 @@
 --[[ 
-    Vvv PREMIUM - FPS DEVOURER (LAGGER MODE)
-    Objetivo: Saturar el servidor para bajar FPS ajenos.
+    Vvv PREMIUM - FPS DEVOURER (USER PROTECTED)
+    Laguea a los demás, pero protege tu celular.
 ]]--
 
 local RunService = game:GetService("RunService")
@@ -8,30 +8,49 @@ local Workspace = game:GetService("Workspace")
 
 _G.LaggerActive = true
 
--- Esta función genera un tráfico masivo de datos que el servidor debe replicar a otros
-local function lagServer()
+-- 1. PROTECCIÓN PARA TU CELULAR (Anti-Lag Personal)
+local function protegerMiCelular()
+    -- Desactiva efectos visuales pesados solo en tu pantalla
+    settings().Rendering.QualityLevel = 1
+    for _, v in pairs(Workspace:GetDescendants()) do
+        if v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") then
+            v.Enabled = false
+        end
+    end
+end
+
+-- 2. EL DEVORADOR (Spam de red optimizado)
+local function devourer()
     if not _G.LaggerActive then return end
     
-    -- Buscamos cada objeto interactuable para "spamear" peticiones
-    for _, v in pairs(Workspace:GetDescendants()) do
-        if v:IsA("ProximityPrompt") then
-            -- Forzamos al servidor a procesar interacciones nulas constantemente
-            v.HoldDuration = 0
-            for i = 1, 50 do -- Multiplicador de spam por frame
-                fireproximityprompt(v)
+    -- Solo buscamos los objetos clave que vimos en los videos (Collect, Place, Steal)
+    -- Esto evita que tu celular escanee cosas innecesarias
+    for _, v in pairs(Workspace:GetChildren()) do
+        local prompt = v:FindFirstChildWhichIsA("ProximityPrompt", true)
+        if prompt then
+            prompt.HoldDuration = 0
+            -- Enviamos el paquete al servidor (esto es lo que laguea a otros)
+            -- Pero limitamos la cantidad para que tu celular no explote
+            for i = 1, 15 do 
+                fireproximityprompt(prompt)
             end
         end
     end
 end
 
--- Ejecución extrema: Heartbeat corre ANTES de que se rendericen los frames
-RunService.Heartbeat:Connect(function()
-    pcall(lagServer)
+-- Ejecución
+pcall(protegerMiCelular)
+
+-- Usamos Heartbeat pero con un pequeño descanso para que tu CPU respire
+task.spawn(function()
+    while _G.LaggerActive do
+        pcall(devourer)
+        task.wait(0.1) -- El secreto: 0.1s es suficiente para laguear sin crashear TÚ
+    end
 end)
 
--- Notificación de activación igual al video
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "SEAL FPS DEVOURER";
-    Text = "LAGGING SERVER... STATUS: EXTREME";
+    Text = "PROTECTED MODE: ON";
     Duration = 5;
 })
