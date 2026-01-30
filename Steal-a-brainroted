@@ -1,106 +1,58 @@
 --[[ 
-    Vvv PREMIUM - Edición Guardian Final
-    Calibrado para apuntado preciso al objetivo.
+    Vvv PREMIUM - Módulo Insta-Grab (Steal a Brainrot Edition)
+    Optimizado para captura instantánea de Brainrots.
 ]]--
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
--- Limpieza de interfaces previas
-for _, child in pairs(CoreGui:GetChildren()) do
-    if child.Name == "VvvHub_Final" then
-        child:Destroy()
-    end
-end
+-- Configuración Crítica
+_G.GrabBrainrot = true
+_G.RangoCaptura = 50 -- Aumentado para mayor cobertura
 
--- Interfaz Premium
-local ScreenGui = Instance.new("ScreenGui", CoreGui)
-ScreenGui.Name = "VvvHub_Final"
-
-local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 160, 0, 95)
-MainFrame.Position = UDim2.new(0.5, -80, 0.2, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 12)
-MainFrame.Active = true
-MainFrame.Draggable = true
-
-local UIStroke = Instance.new("UIStroke", MainFrame)
-UIStroke.Color = Color3.fromRGB(0, 255, 255)
-UIStroke.Thickness = 2
-
-local UICorner = Instance.new("UICorner", MainFrame)
-UICorner.CornerRadius = UDim.new(0, 10)
-
-local Title = Instance.new("TextLabel", MainFrame)
-Title.Text = "Vvv PREMIUM"
-Title.Size = UDim2.new(1, 0, 0.4, 0)
-Title.TextColor3 = Color3.fromRGB(0, 255, 255)
-Title.Font = Enum.Font.GothamBold
-Title.BackgroundTransparency = 1
-Title.TextSize = 14
-
-local ToggleBtn = Instance.new("TextButton", MainFrame)
-ToggleBtn.Text = "SISTEMA: OFF"
-ToggleBtn.Size = UDim2.new(0.85, 0, 0.4, 0)
-ToggleBtn.Position = UDim2.new(0.075, 0, 0.5, 0)
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-ToggleBtn.TextColor3 = Color3.new(1, 1, 1)
-ToggleBtn.Font = Enum.Font.GothamBold
-ToggleBtn.TextSize = 11
-
-Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 6)
-
--- Lógica de Apuntado Calibrada
-local activo = false
-
-local function ejecutarDefensa()
+local function capturarBrainrot()
+    if not _G.GrabBrainrot then return end
+    
     local char = LocalPlayer.Character
     if not char or not char:FindFirstChild("HumanoidRootPart") then return end
-    
-    local tool = LocalPlayer.Backpack:FindFirstChild("Capa Láser") or char:FindFirstChild("Capa Láser")
-    if not tool then return end
 
-    local objetivo = nil
-    local distanciaCercana = 18 -- Rango de activación
+    -- Buscamos el objeto específico en el Workspace
+    for _, obj in pairs(game.Workspace:GetDescendants()) do
+        -- Filtramos por nombre (ajustado para Steal a Brainrot)
+        if obj.Name == "Brainrot" or obj:FindFirstChild("Brainrot") or obj.Parent.Name == "Brainrot" then
+            
+            local targetPart = nil
+            if obj:IsA("BasePart") then
+                targetPart = obj
+            elseif obj:IsA("Model") then
+                targetPart = obj:FindFirstChildWhichIsA("BasePart")
+            end
 
-    -- Buscar al jugador más cercano
-    for _, p in pairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-            local dist = (char.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude
-            if dist < distanciaCercana then
-                objetivo = p.Character.HumanoidRootPart
-                break
+            if targetPart then
+                local dist = (char.HumanoidRootPart.Position - targetPart.Position).Magnitude
+                if dist <= _G.RangoCaptura then
+                    -- Simulación de contacto físico instantáneo (Touch Interest)
+                    firetouchinterest(char.HumanoidRootPart, targetPart, 0)
+                    task.wait()
+                    firetouchinterest(char.HumanoidRootPart, targetPart, 1)
+                    
+                    -- Intento secundario: Si es una herramienta, equiparla
+                    if targetPart.Parent:IsA("Tool") then
+                        targetPart.Parent.Parent = char
+                    end
+                end
             end
         end
     end
-
-    if objetivo then
-        if tool.Parent ~= char then 
-            char.Humanoid:EquipTool(tool) 
-        end
-        
-        -- APUNTADO PRECISO: El personaje gira para mirar directamente al torso del objetivo
-        -- Esto evita que el láser apunte al piso
-        local targetPos = objetivo.Position
-        char.HumanoidRootPart.CFrame = CFrame.new(char.HumanoidRootPart.Position, Vector3.new(targetPos.X, targetPos.Y, targetPos.Z))
-        
-        tool:Activate()
-    end
 end
 
-ToggleBtn.MouseButton1Click:Connect(function()
-    activo = not activo
-    ToggleBtn.Text = activo and "SISTEMA: ON" or "SISTEMA: OFF"
-    ToggleBtn.BackgroundColor3 = activo and Color3.fromRGB(0, 150, 150) or Color3.fromRGB(25, 25, 25)
-end)
-
-task.spawn(function()
-    while true do
-        if activo then
-            ejecutarDefensa()
-        end
-        task.wait(0.05) -- Mayor frecuencia para seguimiento en tiempo real
+-- Bucle de máxima velocidad (RenderStepped corre cada frame del juego)
+RunService.RenderStepped:Connect(function()
+    if _G.GrabBrainrot then
+        capturarBrainrot()
     end
 end)
+
+-- Aviso de Sistema Listo
+print("Vvv PREMIUM: Sistema de captura de Brainrot activo a máxima velocidad.")
