@@ -1,41 +1,72 @@
--- Vvv hub - Versión Activación Real
+-- Vvv hub OFFICIAL 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
--- (Mantén tu código de la UI y movimiento aquí arriba)
+if CoreGui:FindFirstChild("VvvHub_Gui") then
+    CoreGui.VvvHub_Gui:Destroy()
+end
 
--- --- LÓGICA DE ACTIVACIÓN DE CAPA DEL JUEGO ---
-local function toggleCapaJuego(estado)
-    -- 1. Intenta activar por herramienta
-    local capaTool = LocalPlayer.Backpack:FindFirstChild("Capa Láser") or LocalPlayer.Character:FindFirstChild("Capa Láser")
-    if capaTool then
-        LocalPlayer.Character.Humanoid:EquipTool(capaTool)
-        capaTool:Activate() -- Esto dispara la función principal de la capa
-    end
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "VvvHub_Gui"
+ScreenGui.Parent = CoreGui
 
-    -- 2. Intenta disparar el evento del servidor (si el juego lo usa)
-    local remote = game:GetService("ReplicatedStorage"):FindFirstChild("ActivateCape") or game:GetService("ReplicatedStorage"):FindFirstChild("CapaEvent")
-    if remote then
-        remote:FireServer(estado)
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 170, 0, 95)
+MainFrame.Position = UDim2.new(0.5, -85, 0.5, -45)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+MainFrame.Active = true
+MainFrame.Draggable = true 
+MainFrame.Parent = ScreenGui
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Color = Color3.fromRGB(0, 255, 255)
+UIStroke.Thickness = 2
+UIStroke.Parent = MainFrame
+
+local Title = Instance.new("TextLabel")
+Title.Text = "Vvv hub"
+Title.Size = UDim2.new(1, 0, 0.45, 0)
+Title.BackgroundTransparency = 1
+Title.TextColor3 = Color3.fromRGB(0, 255, 255)
+Title.Font = Enum.Font.GothamBold
+Title.Parent = MainFrame
+
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Text = "CAPA: OFF"
+ToggleBtn.Size = UDim2.new(0.85, 0, 0.35, 0)
+ToggleBtn.Position = UDim2.new(0.075, 0, 0.55, 0)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+ToggleBtn.TextColor3 = Color3.new(1, 1, 1)
+ToggleBtn.Parent = MainFrame
+
+-- --- ESTA ES LA LÓGICA QUE FALTABA ---
+local activa = false
+
+local function gestionarCapa()
+    local char = LocalPlayer.Character
+    local bp = LocalPlayer:FindFirstChild("Backpack")
+    if not char or not bp then return end
+
+    local tool = bp:FindFirstChild("Capa Láser") or char:FindFirstChild("Capa Láser")
+    
+    if tool and activa then
+        if tool.Parent ~= char then
+            char.Humanoid:EquipTool(tool)
+        end
+        tool:Activate()
     end
 end
 
--- --- BOTÓN DEL HUB ---
-local activa = false
 ToggleBtn.MouseButton1Click:Connect(function()
     activa = not activa
     ToggleBtn.Text = activa and "CAPA: ON" or "CAPA: OFF"
     ToggleBtn.BackgroundColor3 = activa and Color3.fromRGB(0, 150, 150) or Color3.fromRGB(30, 30, 30)
-    
-    -- Activa/Desactiva la del juego
-    toggleCapaJuego(activa)
 end)
 
--- Bucle de defensa (Laser y Empuje)
 RunService.Heartbeat:Connect(function()
-    if not activa then return end
-    
-    -- Aquí sigue tu lógica de rayos cian que ya tenías
-    -- para asegurar que nadie se acerque mientras la capa brilla
+    if activa then
+        gestionarCapa()
+    end
 end)
