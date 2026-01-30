@@ -1,6 +1,6 @@
 --[[ 
-    Vvv PREMIUM - Insta-Collect & Place (Sin Spam)
-    Optimizado para Steal a Brainrot
+    Vvv PREMIUM - Insta-Collect & Steal (Versión Final Optimizada)
+    Sin Lag - Sin Spam - Recolección Instantánea
 ]]--
 
 local Players = game:GetService("Players")
@@ -8,61 +8,53 @@ local LocalPlayer = Players.LocalPlayer
 
 _G.AutoFarm = true
 
--- Tabla de nombres de acciones para evitar clickear cosas innecesarias
-local AccionesValidas = {
+-- Lista de acciones específicas que vemos en tus videos
+local AccionesObjetivo = {
     ["Collect"] = true,
     ["Place"] = true,
-    ["Steal"] = true,
-    ["Esok Sekolah"] = true
+    ["Steal"] = true
 }
 
-local function farmearBrainrot()
+local function ejecutarAutoFarm()
     if not _G.AutoFarm then return end
     
     local char = LocalPlayer.Character
     if not char or not char:FindFirstChild("HumanoidRootPart") then return end
     local root = char.HumanoidRootPart
 
-    -- Buscamos solo objetos con ProximityPrompt que estén cerca
+    -- Buscamos ProximityPrompts en un radio cercano para evitar el lag masivo
     for _, v in pairs(game.Workspace:GetDescendants()) do
         if v:IsA("ProximityPrompt") then
-            -- Solo interactúa si el texto coincide con lo que se ve en tus videos
-            if AccionesValidas[v.ActionText] or AccionesValidas[v.ObjectText] then
+            -- Solo interactuamos si el texto coincide con los videos
+            if AccionesObjetivo[v.ActionText] or AccionesObjetivo[v.ObjectText] then
                 
-                -- Distancia máxima para que el juego no detecte trampa (20-25 studs)
-                local pos = v.Parent:IsA("BasePart") and v.Parent.Position or v.Parent:GetModelCFrame().Position
+                -- Verificamos distancia para que el servidor no rechace la acción
+                local pos = v.Parent:IsA("Model") and v.Parent:GetModelCFrame().Position or v.Parent.Position
                 local distancia = (root.Position - pos).Magnitude
                 
-                if distancia < 25 then
-                    -- Lo hace instantáneo pero solo una vez por objeto
+                if distancia < 30 then
+                    -- Configuramos para que sea instantáneo y lo disparamos
                     v.HoldDuration = 0
                     fireproximityprompt(v)
-                    
-                    -- Pequeña pausa de milisegundos para que el servidor procese el dinero
-                    -- Esto evita el lag y el spam excesivo
-                    task.wait(0.05) 
                 end
             end
         end
     end
 end
 
--- Bucle controlado para evitar crasheos
+-- Bucle controlado: 0.5 segundos es el balance perfecto para no dar lag y ser rápido
 task.spawn(function()
     while true do
         if _G.AutoFarm then
-            local success, err = pcall(farmearBrainrot)
-            if not success then warn("Error en el farm: " .. err) end
+            pcall(ejecutarAutoFarm)
         end
-        -- Espera 0.3 segundos antes de volver a escanear (Sigue siendo muy rápido)
-        task.wait(0.3)
+        task.wait(0.5) 
     end
 end)
 
+-- Notificación de éxito
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "Vvv PREMIUM";
-    Text = "Auto-Farm Corregido (Sin Spam)";
-    Duration = 3;
+    Text = "Auto-Farm Activo: Collect, Place & Steal";
+    Duration = 4;
 })
-
-
