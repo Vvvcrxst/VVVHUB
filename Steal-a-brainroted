@@ -1,57 +1,41 @@
--- Vvv hub - Versión Auto-Equip Oficial
+-- Vvv hub - Versión Activación Real
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
--- (Aquí mantienes todo el código de la UI y movimiento que ya funciona)
+-- (Mantén tu código de la UI y movimiento aquí arriba)
 
--- --- LÓGICA DE AUTO-EQUIPAR OBJETO DEL JUEGO ---
-local nombreDeLaCapa = "Capa Láser" -- Asegúrate de que este sea el nombre exacto en el juego
+-- --- LÓGICA DE ACTIVACIÓN DE CAPA DEL JUEGO ---
+local function toggleCapaJuego(estado)
+    -- 1. Intenta activar por herramienta
+    local capaTool = LocalPlayer.Backpack:FindFirstChild("Capa Láser") or LocalPlayer.Character:FindFirstChild("Capa Láser")
+    if capaTool then
+        LocalPlayer.Character.Humanoid:EquipTool(capaTool)
+        capaTool:Activate() -- Esto dispara la función principal de la capa
+    end
 
-local function autoEquiparCapa()
-    local backpack = LocalPlayer:FindFirstChild("Backpack")
-    local character = LocalPlayer.Character
-    
-    if character and backpack then
-        -- Buscar la capa en la mochila
-        local capa = backpack:FindFirstChild(nombreDeLaCapa)
-        if capa and capa:IsA("Tool") then
-            character.Humanoid:EquipTool(capa)
-        end
+    -- 2. Intenta disparar el evento del servidor (si el juego lo usa)
+    local remote = game:GetService("ReplicatedStorage"):FindFirstChild("ActivateCape") or game:GetService("ReplicatedStorage"):FindFirstChild("CapaEvent")
+    if remote then
+        remote:FireServer(estado)
     end
 end
 
-local function desequiparCapa()
-    local character = LocalPlayer.Character
-    if character then
-        local capaEnMano = character:FindFirstChild(nombreDeLaCapa)
-        if capaEnMano then
-            capaEnMano.Parent = LocalPlayer.Backpack
-        end
-    end
-end
-
--- --- ACTUALIZACIÓN DEL BOTÓN TOGGLE ---
+-- --- BOTÓN DEL HUB ---
 local activa = false
 ToggleBtn.MouseButton1Click:Connect(function()
     activa = not activa
     ToggleBtn.Text = activa and "CAPA: ON" or "CAPA: OFF"
-    ToggleBtn.BackgroundColor3 = activa and Color3.fromRGB(0, 100, 100) or Color3.fromRGB(30, 30, 30)
-    UIStroke.Color = activa and Color3.fromRGB(255, 0, 255) or Color3.fromRGB(0, 255, 255)
+    ToggleBtn.BackgroundColor3 = activa and Color3.fromRGB(0, 150, 150) or Color3.fromRGB(30, 30, 30)
     
-    if activa then
-        autoEquiparCapa()
-    else
-        desequiparCapa()
-    end
+    -- Activa/Desactiva la del juego
+    toggleCapaJuego(activa)
 end)
 
--- Bucle para asegurar que siempre esté equipada si se cae o mueres
+-- Bucle de defensa (Laser y Empuje)
 RunService.Heartbeat:Connect(function()
-    if activa then
-        local character = LocalPlayer.Character
-        if character and not character:FindFirstChild(nombreDeLaCapa) then
-            autoEquiparCapa()
-        end
-    end
+    if not activa then return end
+    
+    -- Aquí sigue tu lógica de rayos cian que ya tenías
+    -- para asegurar que nadie se acerque mientras la capa brilla
 end)
