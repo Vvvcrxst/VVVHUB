@@ -1,34 +1,36 @@
 --[[ 
-    Vvv PREMIUM - Insta-Collect OPTIMIZADO
-    Sin Lag - Respuesta Instantánea
+    Vvv PREMIUM - Insta-Collect & Place (Steal a Brainrot Edition)
+    Optimizado para evitar LAG y funcionar al instante.
 ]]--
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
-_G.AutoCollect = true
+_G.AutoFarm = true
 
--- Función de recolección optimizada
-local function safeCollect()
-    if not _G.AutoCollect then return end
+-- Función principal optimizada
+local function collectAndPlace()
+    if not _G.AutoFarm then return end
     
-    local char = LocalPlayer.Character
-    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+    local character = LocalPlayer.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then return end
 
-    -- En lugar de buscar en todo el juego, buscamos cerca del jugador
-    -- Esto elimina el lag por completo
-    local root = char.HumanoidRootPart
-    
+    -- Buscamos solo en el área cercana para evitar LAG
     for _, obj in pairs(game.Workspace:GetChildren()) do
-        -- Buscamos específicamente modelos o partes que tengan el prompt
-        if obj:IsA("Model") or obj:IsA("Part") then
-            local prompt = obj:FindFirstChildWhichIsA("ProximityPrompt", true)
-            if prompt then
-                -- Solo actúa si está en un rango razonable (evita procesar cosas inútiles)
-                local partPos = obj:IsA("Model") and obj:GetModelCFrame().Position or obj.Position
-                if (root.Position - partPos).Magnitude < 30 then
-                    prompt.HoldDuration = 0
+        -- Buscamos los botones de interacción (ProximityPrompts)
+        local prompt = obj:FindFirstChildWhichIsA("ProximityPrompt", true)
+        
+        if prompt then
+            -- Solo activa si es "Collect" o "Place" como se ve en tu video
+            if prompt.ObjectText == "Esok Sekolah" or prompt.ActionText == "Collect" or prompt.ActionText == "Place" then
+                
+                -- Hacerlo instantáneo
+                prompt.HoldDuration = 0
+                
+                -- Verificar distancia para que sea realista y no cause errores del servidor
+                local dist = (character.HumanoidRootPart.Position - prompt.Parent:GetModelCFrame().Position).Magnitude
+                if dist < 25 then
                     fireproximityprompt(prompt)
                 end
             end
@@ -36,13 +38,20 @@ local function safeCollect()
     end
 end
 
--- Lo ejecutamos cada 0.1 segundos (sigue siendo muy rápido pero NO da lag)
+-- Ejecución inteligente: Cada 0.2 segundos es suficiente para ser el más rápido sin laggear
 task.spawn(function()
     while true do
-        pcall(safeCollect)
-        task.wait(0.1)
+        if _G.AutoFarm then
+            pcall(collectAndPlace)
+        end
+        task.wait(0.2) 
     end
 end)
 
--- INTEGRACIÓN DE INTERFAZ (Tu menú de ayer)
--- [Aquí va el código de la GUI que ya tenías para que se vea el menú]
+-- Notificación de que el sistema está listo
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "Vvv PREMIUM";
+    Text = "Auto-Collect & Place LISTO (Sin Lag)";
+    Duration = 5;
+})
+
