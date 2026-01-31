@@ -1,6 +1,6 @@
 --[[ 
-    Vvv HUB - ULTIMATE PURPLE EDITION (NO LAG FIX)
-    Arreglado: Ya no congela tu pantalla al activar el modo.
+    Vvv HUB - ULTIMATE PURPLE EDITION
+    Funciones: Interfaz Morada, Arrastrable, Equip All + Clon Visual
 ]]--
 
 local Players = game:GetService("Players")
@@ -8,12 +8,12 @@ local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 
--- 1. LIMPIEZA (Para que no se dupliquen las interfaces)
+-- 1. LIMPIEZA (Borra interfaces viejas si existen)
 for _, gui in pairs(game:GetService("CoreGui"):GetChildren()) do
     if gui.Name == "VvvPurpleUI" then gui:Destroy() end
 end
 
--- 2. CREACIÓN DE LA INTERFAZ (Estilo Morado Vivo - Intacto)
+-- 2. CREACIÓN DE LA INTERFAZ (Estilo Morado Vivo)
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "VvvPurpleUI"
 ScreenGui.Parent = game:GetService("CoreGui")
@@ -22,11 +22,11 @@ local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Size = UDim2.new(0, 250, 0, 160)
 MainFrame.Position = UDim2.new(0.5, -125, 0.4, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(20, 0, 40) 
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 0, 40) -- Fondo Muy Oscuro
 MainFrame.BorderSizePixel = 4
-MainFrame.BorderColor3 = Color3.fromRGB(170, 0, 255) -- NEÓN MORADO
+MainFrame.BorderColor3 = Color3.fromRGB(170, 0, 255) -- BORDE NEÓN MORADO
 MainFrame.Active = true
-MainFrame.Draggable = true -- Movible
+MainFrame.Draggable = true -- Habilitamos arrastre nativo simple
 MainFrame.Parent = ScreenGui
 
 -- Título
@@ -43,14 +43,14 @@ Title.Parent = MainFrame
 local Button = Instance.new("TextButton")
 Button.Size = UDim2.new(0.8, 0, 0.4, 0)
 Button.Position = UDim2.new(0.1, 0, 0.4, 0)
-Button.BackgroundColor3 = Color3.fromRGB(60, 0, 100)
+Button.BackgroundColor3 = Color3.fromRGB(60, 0, 100) -- Morado Apagado
 Button.Text = "CLON MODE: OFF"
 Button.TextColor3 = Color3.fromRGB(255, 255, 255)
 Button.TextSize = 20
 Button.Font = Enum.Font.SourceSansBold
 Button.Parent = MainFrame
 
--- Créditos
+-- Créditos pequeños
 local Credits = Instance.new("TextLabel")
 Credits.Text = "By Vvvcrxst"
 Credits.Size = UDim2.new(1, 0, 0, 20)
@@ -59,7 +59,7 @@ Credits.BackgroundTransparency = 1
 Credits.TextColor3 = Color3.fromRGB(170, 0, 255)
 Credits.Parent = MainFrame
 
--- 3. LÓGICA DEL SCRIPT (OPTIMIZADA)
+-- 3. LÓGICA DEL SCRIPT (CLONAR Y EQUIPAR)
 local active = false
 local cloneModel = nil
 
@@ -69,40 +69,37 @@ local function toggleMode()
     if active then
         -- ACTIVAR (ON)
         Button.Text = "CLON MODE: ON"
-        Button.BackgroundColor3 = Color3.fromRGB(180, 0, 255) -- Morado Vivo
-        Button.TextColor3 = Color3.new(0,0,0)
+        Button.BackgroundColor3 = Color3.fromRGB(180, 0, 255) -- Morado Brillante
+        Button.TextColor3 = Color3.new(0,0,0) -- Texto Negro
         
-        -- A) Equipar todo (OPTIMIZADO: Ahora espera 0.25s entre ciclos)
+        -- A) Equipar todo (Spam de herramientas)
         task.spawn(function()
             while active do
                 if LocalPlayer.Character and LocalPlayer.Backpack then
-                    -- Solo intenta equipar si hay cosas en la mochila para ahorrar CPU
-                    if #LocalPlayer.Backpack:GetChildren() > 0 then
-                        for _, tool in pairs(LocalPlayer.Backpack:GetChildren()) do
-                            if tool:IsA("Tool") then
-                                tool.Parent = LocalPlayer.Character
-                            end
+                    for _, tool in pairs(LocalPlayer.Backpack:GetChildren()) do
+                        if tool:IsA("Tool") then
+                            tool.Parent = LocalPlayer.Character
                         end
                     end
                 end
-                -- ESTA LÍNEA ES LA SOLUCIÓN AL LAG:
-                task.wait(0.25) 
+                task.wait()
             end
         end)
         
-        -- B) Crear Clon Visual (Igual que antes)
+        -- B) Crear Clon Visual
         local char = LocalPlayer.Character
         if char then
             char.Archivable = true
             cloneModel = char:Clone()
             cloneModel.Name = "Clon_"..LocalPlayer.Name
             cloneModel.Parent = workspace
+            -- Mover un poco a la derecha y anclarlo
             cloneModel:SetPrimaryPartCFrame(char.PrimaryPart.CFrame * CFrame.new(3,0,0))
-            
             for _, part in pairs(cloneModel:GetDescendants()) do
                 if part:IsA("BasePart") then
                     part.Anchored = true
                     part.CanCollide = false
+                    -- Efecto fantasma morado
                     part.Material = Enum.Material.ForceField 
                     part.Color = Color3.fromRGB(170, 0, 255)
                 end
@@ -113,4 +110,20 @@ local function toggleMode()
         -- DESACTIVAR (OFF)
         Button.Text = "CLON MODE: OFF"
         Button.BackgroundColor3 = Color3.fromRGB(60, 0, 100)
-        Button.TextColor3 = Color3.
+        Button.TextColor3 = Color3.white
+        
+        -- Eliminar Clon
+        if cloneModel then cloneModel:Destroy() cloneModel = nil end
+        
+        -- Guardar herramientas
+        if LocalPlayer.Character then
+            for _, tool in pairs(LocalPlayer.Character:GetChildren()) do
+                if tool:IsA("Tool") then
+                    tool.Parent = LocalPlayer.Backpack
+                end
+            end
+        end
+    end
+end
+
+Button.MouseButton1Click:Connect(toggleMode)
