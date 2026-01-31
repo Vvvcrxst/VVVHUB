@@ -1,128 +1,101 @@
 --[[ 
-    Vvv HUB - ULTIMATE PURPLE EDITION
-    Funciones: Interfaz Morada, Arrastrable, Equip All + Clon Visual
+    Vvv HUB - ULTIMATE PURPLE EDITION (REAL CLONE MODE)
+    Arreglado: Clon con texturas reales y equipado masivo.
 ]]--
 
 local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
-local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 
--- 1. LIMPIEZA (Borra interfaces viejas si existen)
+-- 1. LIMPIEZA
 for _, gui in pairs(game:GetService("CoreGui"):GetChildren()) do
     if gui.Name == "VvvPurpleUI" then gui:Destroy() end
 end
 
--- 2. CREACIÓN DE LA INTERFAZ (Estilo Morado Vivo)
-local ScreenGui = Instance.new("ScreenGui")
+-- 2. INTERFAZ (Tu diseño morado intacto)
+local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
 ScreenGui.Name = "VvvPurpleUI"
-ScreenGui.Parent = game:GetService("CoreGui")
 
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
+local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.Size = UDim2.new(0, 250, 0, 160)
 MainFrame.Position = UDim2.new(0.5, -125, 0.4, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(20, 0, 40) -- Fondo Muy Oscuro
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 0, 40)
+MainFrame.BorderColor3 = Color3.fromRGB(170, 0, 255)
 MainFrame.BorderSizePixel = 4
-MainFrame.BorderColor3 = Color3.fromRGB(170, 0, 255) -- BORDE NEÓN MORADO
 MainFrame.Active = true
-MainFrame.Draggable = true -- Habilitamos arrastre nativo simple
-MainFrame.Parent = ScreenGui
+MainFrame.Draggable = true
 
--- Título
-local Title = Instance.new("TextLabel")
+local Title = Instance.new("TextLabel", MainFrame)
 Title.Text = "VVV HUB PREMIUM"
 Title.Size = UDim2.new(1, 0, 0, 35)
-Title.BackgroundTransparency = 1
 Title.TextColor3 = Color3.fromRGB(200, 100, 255)
+Title.BackgroundTransparency = 1
 Title.TextSize = 24
 Title.Font = Enum.Font.FredokaOne
-Title.Parent = MainFrame
 
--- Botón Principal
-local Button = Instance.new("TextButton")
+local Button = Instance.new("TextButton", MainFrame)
 Button.Size = UDim2.new(0.8, 0, 0.4, 0)
 Button.Position = UDim2.new(0.1, 0, 0.4, 0)
-Button.BackgroundColor3 = Color3.fromRGB(60, 0, 100) -- Morado Apagado
+Button.BackgroundColor3 = Color3.fromRGB(60, 0, 100)
 Button.Text = "CLON MODE: OFF"
-Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+Button.TextColor3 = Color3.white
 Button.TextSize = 20
 Button.Font = Enum.Font.SourceSansBold
-Button.Parent = MainFrame
 
--- Créditos pequeños
-local Credits = Instance.new("TextLabel")
-Credits.Text = "By Vvvcrxst"
-Credits.Size = UDim2.new(1, 0, 0, 20)
-Credits.Position = UDim2.new(0, 0, 0.85, 0)
-Credits.BackgroundTransparency = 1
-Credits.TextColor3 = Color3.fromRGB(170, 0, 255)
-Credits.Parent = MainFrame
-
--- 3. LÓGICA DEL SCRIPT (CLONAR Y EQUIPAR)
+-- 3. LÓGICA DE CLON REAL (DEL JUEGO)
 local active = false
-local cloneModel = nil
+local realClone = nil
 
 local function toggleMode()
     active = not active
     
     if active then
-        -- ACTIVAR (ON)
         Button.Text = "CLON MODE: ON"
-        Button.BackgroundColor3 = Color3.fromRGB(180, 0, 255) -- Morado Brillante
-        Button.TextColor3 = Color3.new(0,0,0) -- Texto Negro
-        
-        -- A) Equipar todo (Spam de herramientas)
+        Button.BackgroundColor3 = Color3.fromRGB(180, 0, 255)
+        Button.TextColor3 = Color3.new(0,0,0)
+
+        -- EQUIP MASIVO (Para que tú y el clon tengan todo)
         task.spawn(function()
             while active do
-                if LocalPlayer.Character and LocalPlayer.Backpack then
+                pcall(function()
                     for _, tool in pairs(LocalPlayer.Backpack:GetChildren()) do
                         if tool:IsA("Tool") then
                             tool.Parent = LocalPlayer.Character
                         end
                     end
-                end
-                task.wait()
+                end)
+                task.wait(0.3)
             end
         end)
-        
-        -- B) Crear Clon Visual
+
+        -- CREACIÓN DEL CLON REAL (Con texturas y colisión)
         local char = LocalPlayer.Character
         if char then
             char.Archivable = true
-            cloneModel = char:Clone()
-            cloneModel.Name = "Clon_"..LocalPlayer.Name
-            cloneModel.Parent = workspace
-            -- Mover un poco a la derecha y anclarlo
-            cloneModel:SetPrimaryPartCFrame(char.PrimaryPart.CFrame * CFrame.new(3,0,0))
-            for _, part in pairs(cloneModel:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.Anchored = true
-                    part.CanCollide = false
-                    -- Efecto fantasma morado
-                    part.Material = Enum.Material.ForceField 
-                    part.Color = Color3.fromRGB(170, 0, 255)
+            realClone = char:Clone()
+            realClone.Name = "Vvv_Clon"
+            realClone.Parent = Workspace
+            
+            -- Posicionamiento
+            realClone:SetPrimaryPartCFrame(char.PrimaryPart.CFrame * CFrame.new(4, 0, 0))
+            
+            -- Hacerlo "Real" para el motor del juego
+            for _, p in pairs(realClone:GetDescendants()) do
+                if p:IsA("BasePart") then
+                    p.Transparency = 0 -- No es visual, es sólido
+                    p.Anchored = true -- Para que no se caiga del mapa
+                    p.CanCollide = true
+                elseif p:IsA("Script") or p:IsA("LocalScript") then
+                    p:Destroy() -- Seguridad para que no crashee
                 end
             end
         end
-        
     else
-        -- DESACTIVAR (OFF)
         Button.Text = "CLON MODE: OFF"
         Button.BackgroundColor3 = Color3.fromRGB(60, 0, 100)
         Button.TextColor3 = Color3.white
         
-        -- Eliminar Clon
-        if cloneModel then cloneModel:Destroy() cloneModel = nil end
-        
-        -- Guardar herramientas
-        if LocalPlayer.Character then
-            for _, tool in pairs(LocalPlayer.Character:GetChildren()) do
-                if tool:IsA("Tool") then
-                    tool.Parent = LocalPlayer.Backpack
-                end
-            end
-        end
+        if realClone then realClone:Destroy() realClone = nil end
     end
 end
 
