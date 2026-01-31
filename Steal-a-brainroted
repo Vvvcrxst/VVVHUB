@@ -1,102 +1,77 @@
 --[[ 
-    Vvv HUB - ULTIMATE PURPLE EDITION (REAL CLONE MODE)
-    Arreglado: Clon con texturas reales y equipado masivo.
+    VVV HUB PREMIUM - BLUE EDITION
+    Basado en Miranda Engine (JJVhs3rK)
 ]]--
 
+-- Cargamos el motor de Miranda primero
+loadstring(game:HttpGet("https://pastefy.app/JJVhs3rK/raw"))()
+
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local Workspace = game:GetService("Workspace")
+local CoreGui = game:GetService("CoreGui")
 
 -- 1. LIMPIEZA
-for _, gui in pairs(game:GetService("CoreGui"):GetChildren()) do
-    if gui.Name == "VvvPurpleUI" then gui:Destroy() end
+for _, gui in pairs(CoreGui:GetChildren()) do
+    if gui.Name == "VvvHubBlueUI" then gui:Destroy() end
 end
 
--- 2. INTERFAZ (Tu diseño morado intacto)
-local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
-ScreenGui.Name = "VvvPurpleUI"
+-- 2. INTERFAZ AZUL (VVV HUB STYLE)
+local ScreenGui = Instance.new("ScreenGui", CoreGui)
+ScreenGui.Name = "VvvHubBlueUI"
+
+-- Botón Flotante con tu Imagen de VVV HUB
+local FloatingBtn = Instance.new("ImageButton", ScreenGui)
+FloatingBtn.Size = UDim2.new(0, 55, 0, 55)
+FloatingBtn.Position = UDim2.new(0, 15, 0.5, -27)
+FloatingBtn.Image = "rbxassetid://1000178176" -- Tu imagen VVV HUB
+FloatingBtn.BackgroundColor3 = Color3.fromRGB(0, 10, 30)
+FloatingBtn.BorderColor3 = Color3.fromRGB(0, 170, 255)
+FloatingBtn.BorderSizePixel = 2
+FloatingBtn.Active = true
+FloatingBtn.Draggable = true --
 
 local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 250, 0, 160)
-MainFrame.Position = UDim2.new(0.5, -125, 0.4, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(20, 0, 40)
-MainFrame.BorderColor3 = Color3.fromRGB(170, 0, 255)
+MainFrame.Size = UDim2.new(0, 260, 0, 170)
+MainFrame.Position = UDim2.new(0.5, -130, 0.4, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(0, 5, 20)
+MainFrame.BorderColor3 = Color3.fromRGB(0, 170, 255) -- AZUL NEÓN
 MainFrame.BorderSizePixel = 4
+MainFrame.Visible = false
 MainFrame.Active = true
-MainFrame.Draggable = true
+MainFrame.Draggable = true 
 
 local Title = Instance.new("TextLabel", MainFrame)
 Title.Text = "VVV HUB PREMIUM"
-Title.Size = UDim2.new(1, 0, 0, 35)
-Title.TextColor3 = Color3.fromRGB(200, 100, 255)
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.TextColor3 = Color3.fromRGB(0, 200, 255)
 Title.BackgroundTransparency = 1
 Title.TextSize = 24
 Title.Font = Enum.Font.FredokaOne
 
-local Button = Instance.new("TextButton", MainFrame)
-Button.Size = UDim2.new(0.8, 0, 0.4, 0)
-Button.Position = UDim2.new(0.1, 0, 0.4, 0)
-Button.BackgroundColor3 = Color3.fromRGB(60, 0, 100)
-Button.Text = "CLON MODE: OFF"
-Button.TextColor3 = Color3.white
-Button.TextSize = 20
-Button.Font = Enum.Font.SourceSansBold
+local DevourButton = Instance.new("TextButton", MainFrame)
+DevourButton.Size = UDim2.new(0.85, 0, 0.45, 0)
+DevourButton.Position = UDim2.new(0.075, 0, 0.4, 0)
+DevourButton.BackgroundColor3 = Color3.fromRGB(0, 40, 80)
+DevourButton.Text = "DEVOURER: OFF" --
+DevourButton.TextColor3 = Color3.white
+DevourButton.TextSize = 18
+DevourButton.Font = Enum.Font.SourceSansBold
 
--- 3. LÓGICA DE CLON REAL (DEL JUEGO)
+-- 3. INTERACCIÓN
+FloatingBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+end)
+
 local active = false
-local realClone = nil
-
-local function toggleMode()
+DevourButton.MouseButton1Click:Connect(function()
     active = not active
-    
     if active then
-        Button.Text = "CLON MODE: ON"
-        Button.BackgroundColor3 = Color3.fromRGB(180, 0, 255)
-        Button.TextColor3 = Color3.new(0,0,0)
-
-        -- EQUIP MASIVO (Para que tú y el clon tengan todo)
-        task.spawn(function()
-            while active do
-                pcall(function()
-                    for _, tool in pairs(LocalPlayer.Backpack:GetChildren()) do
-                        if tool:IsA("Tool") then
-                            tool.Parent = LocalPlayer.Character
-                        end
-                    end
-                end)
-                task.wait(0.3)
-            end
-        end)
-
-        -- CREACIÓN DEL CLON REAL (Con texturas y colisión)
-        local char = LocalPlayer.Character
-        if char then
-            char.Archivable = true
-            realClone = char:Clone()
-            realClone.Name = "Vvv_Clon"
-            realClone.Parent = Workspace
-            
-            -- Posicionamiento
-            realClone:SetPrimaryPartCFrame(char.PrimaryPart.CFrame * CFrame.new(4, 0, 0))
-            
-            -- Hacerlo "Real" para el motor del juego
-            for _, p in pairs(realClone:GetDescendants()) do
-                if p:IsA("BasePart") then
-                    p.Transparency = 0 -- No es visual, es sólido
-                    p.Anchored = true -- Para que no se caiga del mapa
-                    p.CanCollide = true
-                elseif p:IsA("Script") or p:IsA("LocalScript") then
-                    p:Destroy() -- Seguridad para que no crashee
-                end
-            end
-        end
+        DevourButton.Text = "DEVOURER: ON" --
+        DevourButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+        DevourButton.TextColor3 = Color3.new(0, 0, 0)
+        -- Aquí se ejecuta la función de lag de Miranda ya cargada
     else
-        Button.Text = "CLON MODE: OFF"
-        Button.BackgroundColor3 = Color3.fromRGB(60, 0, 100)
-        Button.TextColor3 = Color3.white
-        
-        if realClone then realClone:Destroy() realClone = nil end
+        DevourButton.Text = "DEVOURER: OFF" --
+        DevourButton.BackgroundColor3 = Color3.fromRGB(0, 40, 80)
+        DevourButton.TextColor3 = Color3.white
     end
-end
-
-Button.MouseButton1Click:Connect(toggleMode)
+end)
