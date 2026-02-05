@@ -1,77 +1,117 @@
 --[[ 
-    VVV HUB PREMIUM - BLUE EDITION
-    Basado en Miranda Engine (JJVhs3rK)
-]]--
+    VVV HUB PREMIUM - EDICIÓN REBORN
+    Optimización: Máxima (Zero Lag Local)
+    Objetivo: Clonación forzada con inventario completo
+]]
 
--- Cargamos el motor de Miranda primero
-loadstring(game:HttpGet("https://pastefy.app/JJVhs3rK/raw"))()
+print(">> VVV HUB: Iniciando sistema...")
 
 local Players = game:GetService("Players")
-local CoreGui = game:GetService("CoreGui")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
 
--- 1. LIMPIEZA
-for _, gui in pairs(CoreGui:GetChildren()) do
-    if gui.Name == "VvvHubBlueUI" then gui:Destroy() end
+-- Esperar a que el personaje cargue para evitar errores
+local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local devouring = false
+local clonerFound = nil
+
+-- // 1. FUNCIÓN DE EQUIPO AGRESIVO // --
+local function fastEquip()
+    local bp = LocalPlayer:FindFirstChild("Backpack")
+    if character and bp then
+        local tools = bp:GetChildren()
+        for i = 1, #tools do
+            if tools[i]:IsA("Tool") then
+                tools[i].Parent = character
+            end
+        end
+    end
 end
 
--- 2. INTERFAZ AZUL (VVV HUB STYLE)
-local ScreenGui = Instance.new("ScreenGui", CoreGui)
-ScreenGui.Name = "VvvHubBlueUI"
-
--- Botón Flotante con tu Imagen de VVV HUB
-local FloatingBtn = Instance.new("ImageButton", ScreenGui)
-FloatingBtn.Size = UDim2.new(0, 55, 0, 55)
-FloatingBtn.Position = UDim2.new(0, 15, 0.5, -27)
-FloatingBtn.Image = "rbxassetid://1000178176" -- Tu imagen VVV HUB
-FloatingBtn.BackgroundColor3 = Color3.fromRGB(0, 10, 30)
-FloatingBtn.BorderColor3 = Color3.fromRGB(0, 170, 255)
-FloatingBtn.BorderSizePixel = 2
-FloatingBtn.Active = true
-FloatingBtn.Draggable = true --
-
-local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 260, 0, 170)
-MainFrame.Position = UDim2.new(0.5, -130, 0.4, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(0, 5, 20)
-MainFrame.BorderColor3 = Color3.fromRGB(0, 170, 255) -- AZUL NEÓN
-MainFrame.BorderSizePixel = 4
-MainFrame.Visible = false
-MainFrame.Active = true
-MainFrame.Draggable = true 
-
-local Title = Instance.new("TextLabel", MainFrame)
-Title.Text = "VVV HUB PREMIUM"
-Title.Size = UDim2.new(1, 0, 0, 40)
-Title.TextColor3 = Color3.fromRGB(0, 200, 255)
-Title.BackgroundTransparency = 1
-Title.TextSize = 24
-Title.Font = Enum.Font.FredokaOne
-
-local DevourButton = Instance.new("TextButton", MainFrame)
-DevourButton.Size = UDim2.new(0.85, 0, 0.45, 0)
-DevourButton.Position = UDim2.new(0.075, 0, 0.4, 0)
-DevourButton.BackgroundColor3 = Color3.fromRGB(0, 40, 80)
-DevourButton.Text = "DEVOURER: OFF" --
-DevourButton.TextColor3 = Color3.white
-DevourButton.TextSize = 18
-DevourButton.Font = Enum.Font.SourceSansBold
-
--- 3. INTERACCIÓN
-FloatingBtn.MouseButton1Click:Connect(function()
-    MainFrame.Visible = not MainFrame.Visible
+-- // 2. ANTI-LAG LOCAL (Filtrado de Clones) // --
+Workspace.ChildAdded:Connect(function(child)
+    if devouring and child.Name == LocalPlayer.Name and child ~= character then
+        -- Lo borramos para TI antes de que tu celular intente procesarlo
+        task.wait() 
+        child:Destroy() 
+    end
 end)
 
-local active = false
-DevourButton.MouseButton1Click:Connect(function()
-    active = not active
-    if active then
-        DevourButton.Text = "DEVOURER: ON" --
-        DevourButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-        DevourButton.TextColor3 = Color3.new(0, 0, 0)
-        -- Aquí se ejecuta la función de lag de Miranda ya cargada
-    else
-        DevourButton.Text = "DEVOURER: OFF" --
-        DevourButton.BackgroundColor3 = Color3.fromRGB(0, 40, 80)
-        DevourButton.TextColor3 = Color3.white
+-- // 3. BÚSQUEDA DE BOTÓN (Quantum/Cloner) // --
+local function findCloner()
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return nil end
+    
+    for _, v in ipairs(Workspace:GetDescendants()) do
+        if v:IsA("ClickDetector") then
+            local p = v.Parent
+            if p and p:IsA("BasePart") and (p.Position - hrp.Position).Magnitude < 30 then
+                return v
+            end
+        end
+    end
+    return nil
+end
+
+-- // 4. INTERFAZ RESISTENTE (PlayerGui) // --
+local function createUI()
+    local sg = Instance.new("ScreenGui")
+    sg.Name = "VVV_FINAL_VERSION"
+    -- Usamos PlayerGui porque CoreGui a veces falla en móviles
+    sg.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 180, 0, 70)
+    frame.Position = UDim2.new(0.5, -90, 0.2, 0)
+    frame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    frame.Active = true
+    frame.Draggable = true
+    frame.Parent = sg
+
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0.9, 0, 0.8, 0)
+    btn.Position = UDim2.new(0.05, 0, 0.1, 0)
+    btn.Text = "ACTIVAR DEVOUR"
+    btn.BackgroundColor3 = Color3.fromRGB(100, 0, 200)
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Font = Enum.Font.GothamBlack
+    btn.TextSize = 14
+    btn.Parent = frame
+
+    return btn
+end
+
+local mainBtn = createUI()
+print(">> VVV HUB: Interfaz cargada con éxito.")
+
+-- // 5. LÓGICA DE CLONACIÓN SINCRONIZADA // --
+mainBtn.MouseButton1Click:Connect(function()
+    devouring = not devouring
+    mainBtn.Text = devouring and "CAOS: ON" or "ACTIVAR DEVOUR"
+    mainBtn.BackgroundColor3 = devouring and Color3.fromRGB(200, 0, 0) or Color3.fromRGB(100, 0, 200)
+
+    if devouring then
+        task.spawn(function()
+            while devouring do
+                -- PASO A: Equipar todo
+                fastEquip()
+                
+                -- PASO B: Sincronización (Clave para que salgan con armas)
+                -- 0.08s le da tiempo al servidor de reconocer el equipo
+                task.wait(0.08) 
+                
+                -- PASO C: Clonar
+                clonerFound = findCloner()
+                if clonerFound then
+                    if fireclickdetector then
+                        fireclickdetector(clonerFound)
+                    end
+                end
+                
+                -- PASO D: Velocidad de spam
+                task.wait(0.05) 
+            end
+        end)
     end
 end)
