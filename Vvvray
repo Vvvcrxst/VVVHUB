@@ -1,65 +1,59 @@
--- [[ VVVHUB OFICIAL ]]
+-- [[ VVVHUB - VERSIÓN COMPLETA ]]
 -- Mantenido por: vvv_crxst
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-    Name = "VVVHUB | MENU",
-    LoadingTitle = "Cargando VVVHUB v1.1",
+    Name = "VVVHUB | RCR EDITION",
+    LoadingTitle = "Iniciando VVVHUB System",
     LoadingSubtitle = "by vvv_crxst",
     ConfigurationSaving = { Enabled = false },
     KeySystem = false, 
 })
 
-local Tab = Window:CreateTab("Jugador", 4483362458)
+-- PESTAÑA PRINCIPAL (Aquí es donde ocurre la magia)
+local Tab = Window:CreateTab("Launch", 4483362458)
 
--- Control de Velocidad
-Tab:CreateSlider({
-   Name = "Velocidad de Caminado",
+Tab:CreateButton({
+    Name = "EXECUTE MAIN HUB",
+    Callback = function()
+        -- Aquí es donde pones el enlace al script que REALMENTE hace los hacks
+        -- Si tienes el código de RCRHUB_MAIN.lua, lo ideal es que lo pegues aquí directamente
+        local success, err = pcall(function()
+            -- Este es el link al script original que querías
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/glrishikesh-maker/MyScripts/refs/heads/main/RCRHUB_MAIN.lua"))()
+        end)
+        
+        if success then
+            Rayfield:Notify({
+                Title = "Éxito",
+                Content = "RCR HUB ejecutado desde VVVHUB",
+                Duration = 5,
+            })
+        else
+            warn("Error al ejecutar: " .. tostring(err))
+        end
+    end,
+})
+
+-- PESTAÑA DE AJUSTES DEL JUGADOR
+local PlayerTab = Window:CreateTab("Player", 4483362458)
+
+PlayerTab:CreateSlider({
+   Name = "WalkSpeed (Velocidad)",
    Range = {16, 300},
    Increment = 1,
-   Suffix = "Vel",
+   Suffix = "Speed",
    CurrentValue = 16,
-   Flag = "SliderSpeed",
    Callback = function(Value)
       game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
    end,
 })
 
--- Botón para Volar (Fly)
-Tab:CreateButton({
-    Name = "Activar Fly (Volar)",
+PlayerTab:CreateButton({
+    Name = "JumpPower (Super Salto)",
     Callback = function()
-        -- Lógica simple de Fly
-        local player = game.Players.LocalPlayer
-        local char = player.Character
-        local hum = char:FindFirstChildOfClass("Humanoid")
-        
-        local bv = Instance.new("BodyVelocity")
-        bv.MaxForce = Vector3.new(1,1,1) * math.huge
-        bv.Velocity = Vector3.new(0,0,0)
-        bv.Parent = char.PrimaryPart
-        
-        -- Mensaje de aviso
-        Rayfield:Notify({
-            Title = "Fly Activado",
-            Content = "Ahora puedes flotar. (Script básico)",
-            Duration = 3,
-        })
+        game.Players.LocalPlayer.Character.Humanoid.JumpPower = 100
+        game.Players.LocalPlayer.Character.Humanoid.UseJumpPower = true
     end,
-})
-
--- Botón de Salto Infinito
-Tab:CreateToggle({
-   Name = "Salto Infinito",
-   CurrentValue = false,
-   Flag = "InfiniteJump",
-   Callback = function(Value)
-      _G.InfiniteJump = Value
-      game:GetService("UserInputService").JumpRequest:Connect(function()
-          if _G.InfiniteJump then
-              game.Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid'):ChangeState("Jumping")
-          end
-      end)
-   end,
 })
