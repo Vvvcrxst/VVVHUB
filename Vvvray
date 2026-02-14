@@ -1,0 +1,54 @@
+-- [[ RCR LOADER - VERSIÓN PÚBLICA Y GRATUITA ]]
+-- Distribuido por: [TU_NOMBRE_DE_USUARIO]
+
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+    Name = "RCR LOADER | DISTRIBUCIÓN OFICIAL",
+    LoadingTitle = "Cargando RCR System...",
+    LoadingSubtitle = "Verificando integridad en GitHub",
+    ConfigurationSaving = { Enabled = false },
+    KeySystem = false, -- Se mantiene en FALSO para que sea GRATIS y libre
+})
+
+local Tab = Window:CreateTab("Principal", 4483362458)
+
+Tab:CreateButton({
+    Name = "EJECUTAR RCR HUB (GRATIS)",
+    Callback = function()
+        -- CAMBIA EL ENLACE DE ABAJO POR EL TUYO DE GITHUB (USA EL BOTÓN "RAW")
+        local url = "https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/RCRHUB_MAIN.lua"
+        
+        -- El cache buster (?t=...) asegura que si actualizas tu GitHub, 
+        -- el usuario reciba el cambio al instante.
+        local success, scriptContent = pcall(function()
+            return game:HttpGet(url .. "?t=" .. os.time())
+        end)
+
+        if success and scriptContent then
+            local func, err = loadstring(scriptContent)
+            if func then
+                Rayfield:Notify({
+                    Title = "Iniciado",
+                    Content = "¡Gracias por usar mi versión de RCR HUB!",
+                    Duration = 5,
+                    Image = 4483362458,
+                })
+                func() -- Ejecuta tu script
+            else
+                warn("Error de compilación: " .. tostring(err))
+            end
+        else
+            Rayfield:Notify({
+                Title = "Error de Red",
+                Content = "No se pudo conectar con GitHub. Reintenta.",
+                Duration = 5,
+            })
+        end
+    end,
+})
+
+-- Sección de Créditos (Para que sepan que es tuyo)
+local CreditsTab = Window:CreateTab("Créditos", 4483362458)
+CreditsTab:CreateLabel("Script mantenido por [TU_NOMBRE]")
+CreditsTab:CreateParagraph({Title = "Sobre este Script", Content = "Esta es una versión libre y gratuita. Si te gusta, compártela."})
