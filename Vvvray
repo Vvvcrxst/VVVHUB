@@ -5,24 +5,61 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
     Name = "VVVHUB | MENU",
-    LoadingTitle = "Cargando VVVHUB",
+    LoadingTitle = "Cargando VVVHUB v1.1",
     LoadingSubtitle = "by vvv_crxst",
     ConfigurationSaving = { Enabled = false },
     KeySystem = false, 
 })
 
-local Tab = Window:CreateTab("Principal", 4483362458)
+local Tab = Window:CreateTab("Jugador", 4483362458)
 
+-- Control de Velocidad
+Tab:CreateSlider({
+   Name = "Velocidad de Caminado",
+   Range = {16, 300},
+   Increment = 1,
+   Suffix = "Vel",
+   CurrentValue = 16,
+   Flag = "SliderSpeed",
+   Callback = function(Value)
+      game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+   end,
+})
+
+-- Botón para Volar (Fly)
 Tab:CreateButton({
-    Name = "Test de Funcionamiento",
+    Name = "Activar Fly (Volar)",
     Callback = function()
-        print("VVVHUB cargado desde GitHub correctamente.")
+        -- Lógica simple de Fly
+        local player = game.Players.LocalPlayer
+        local char = player.Character
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        
+        local bv = Instance.new("BodyVelocity")
+        bv.MaxForce = Vector3.new(1,1,1) * math.huge
+        bv.Velocity = Vector3.new(0,0,0)
+        bv.Parent = char.PrimaryPart
+        
+        -- Mensaje de aviso
         Rayfield:Notify({
-            Title = "Éxito",
-            Content = "El script está respondiendo.",
+            Title = "Fly Activado",
+            Content = "Ahora puedes flotar. (Script básico)",
             Duration = 3,
         })
     end,
 })
 
--- Aquí puedes añadir más funciones después
+-- Botón de Salto Infinito
+Tab:CreateToggle({
+   Name = "Salto Infinito",
+   CurrentValue = false,
+   Flag = "InfiniteJump",
+   Callback = function(Value)
+      _G.InfiniteJump = Value
+      game:GetService("UserInputService").JumpRequest:Connect(function()
+          if _G.InfiniteJump then
+              game.Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid'):ChangeState("Jumping")
+          end
+      end)
+   end,
+})
