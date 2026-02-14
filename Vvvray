@@ -1,26 +1,28 @@
--- [[ ESTO VA DENTRO DE TU ARCHIVO Vvvray EN GITHUB ]]
+-- [[ VVVHUB OFICIAL ]]
+-- Mantenido por: vvv_crxst
+
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "VVVHUB | OFICIAL",
-   LoadingTitle = "Bienvenido a VVVHUB",
-   LoadingSubtitle = "by vvv_crxst",
-   ConfigurationSaving = { Enabled = false },
-   KeySystem = false,
+    Name = "VVVHUB | MENU",
+    LoadingTitle = "Cargando VVVHUB",
+    LoadingSubtitle = "by vvv_crxst",
+    ConfigurationSaving = { Enabled = false },
+    KeySystem = false, 
 })
 
-local Tab = Window:CreateTab("Main", 4483362458)
+local Tab = Window:CreateTab("Principal", 4483362458)
 
 Tab:CreateButton({
-   Name = "Test: Imprimir en Consola",
-   Callback = function()
-       print("VVVHUB funcionando perfectamente!")
-   end,
+    Name = "Test de Funcionamiento",
+    Callback = function()
+        print("VVVHUB cargado desde GitHub correctamente.")
+        Rayfield:Notify({
+            Title = "Éxito",
+            Content = "El script está respondiendo.",
+            Duration = 3,
+        })
+    end,
 })
 
--- Aquí puedes seguir añadiendo más botones y funciones
-Rayfield:Notify({
-   Title = "VVVHUB Cargado",
-   Content = "Disfruta del script, vvv_crxst",
-   Duration = 5,
-})
+-- Aquí puedes añadir más funciones después
