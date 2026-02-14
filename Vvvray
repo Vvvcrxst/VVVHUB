@@ -1,11 +1,14 @@
+-- [[ VVVHUB - VERSIÓN OFICIAL ]]
+-- Mantenido por: vvv_crxst
+
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
     Name = "VVVHUB | Loader",
     LoadingTitle = "Iniciando VVVHUB System",
-    LoadingSubtitle = "Cargando desde GitHub oficial",
+    LoadingSubtitle = "by vvv_crxst",
     ConfigurationSaving = { Enabled = false },
-    KeySystem = false, -- Acceso total y gratuito
+    KeySystem = false, 
 })
 
 local Tab = Window:CreateTab("Inicio", 4483362458)
@@ -13,38 +16,27 @@ local Tab = Window:CreateTab("Inicio", 4483362458)
 Tab:CreateButton({
     Name = "EJECUTAR VVVHUB",
     Callback = function()
-        -- NOTA: Una vez que guardes este archivo, cambia "TU_USUARIO" por tu nombre real de GitHub
+        -- Tu enlace directo de GitHub
         local url = "https://raw.githubusercontent.com/vvv_crxst/VVVHUB/main/Vvvray"
         
         local success, scriptContent = pcall(function()
-            -- El cache buster (?t=) asegura que tus cambios se vean al instante
             return game:HttpGet(url .. "?t=" .. os.time())
         end)
 
         if success and scriptContent then
             local func, err = loadstring(scriptContent)
             if func then
+                func()
                 Rayfield:Notify({
                     Title = "VVVHUB",
-                    Content = "Script cargado correctamente. ¡Disfruta!",
+                    Content = "¡Script cargado con éxito!",
                     Duration = 5,
-                    Image = 4483362458,
                 })
-                func()
             else
-                warn("Error en el código del script: " .. tostring(err))
+                warn("Error en el script: " .. tostring(err))
             end
         else
-            Rayfield:Notify({
-                Title = "Error de Conexión",
-                Content = "No se pudo obtener el script desde GitHub.",
-                Duration = 5,
-            })
+            warn("Error al conectar con GitHub")
         end
     end,
 })
-
--- Sección de Marca Personal
-local InfoTab = Window:CreateTab("Info", 4483362458)
-InfoTab:CreateLabel("VVVHUB mantenido por ti")
-InfoTab:CreateParagraph({Title = "Versión 1.0", Content = "Script gratuito y de código abierto alojado en GitHub."})
