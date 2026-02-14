@@ -1,27 +1,23 @@
--- [[ RCR LOADER - VERSIÓN PÚBLICA Y GRATUITA ]]
--- Distribuido por: [TU_NOMBRE_DE_USUARIO]
-
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-    Name = "RCR LOADER | DISTRIBUCIÓN OFICIAL",
-    LoadingTitle = "Cargando RCR System...",
-    LoadingSubtitle = "Verificando integridad en GitHub",
+    Name = "VVVHUB | Loader",
+    LoadingTitle = "Iniciando VVVHUB System",
+    LoadingSubtitle = "Cargando desde GitHub oficial",
     ConfigurationSaving = { Enabled = false },
-    KeySystem = false, -- Se mantiene en FALSO para que sea GRATIS y libre
+    KeySystem = false, -- Acceso total y gratuito
 })
 
-local Tab = Window:CreateTab("Principal", 4483362458)
+local Tab = Window:CreateTab("Inicio", 4483362458)
 
 Tab:CreateButton({
-    Name = "EJECUTAR RCR HUB (GRATIS)",
+    Name = "EJECUTAR VVVHUB",
     Callback = function()
-        -- CAMBIA EL ENLACE DE ABAJO POR EL TUYO DE GITHUB (USA EL BOTÓN "RAW")
-        local url = "https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/RCRHUB_MAIN.lua"
+        -- NOTA: Una vez que guardes este archivo, cambia "TU_USUARIO" por tu nombre real de GitHub
+        local url = "https://raw.githubusercontent.com/vvv_crxst/VVVHUB/main/Vvvray"
         
-        -- El cache buster (?t=...) asegura que si actualizas tu GitHub, 
-        -- el usuario reciba el cambio al instante.
         local success, scriptContent = pcall(function()
+            -- El cache buster (?t=) asegura que tus cambios se vean al instante
             return game:HttpGet(url .. "?t=" .. os.time())
         end)
 
@@ -29,26 +25,26 @@ Tab:CreateButton({
             local func, err = loadstring(scriptContent)
             if func then
                 Rayfield:Notify({
-                    Title = "Iniciado",
-                    Content = "¡Gracias por usar mi versión de RCR HUB!",
+                    Title = "VVVHUB",
+                    Content = "Script cargado correctamente. ¡Disfruta!",
                     Duration = 5,
                     Image = 4483362458,
                 })
-                func() -- Ejecuta tu script
+                func()
             else
-                warn("Error de compilación: " .. tostring(err))
+                warn("Error en el código del script: " .. tostring(err))
             end
         else
             Rayfield:Notify({
-                Title = "Error de Red",
-                Content = "No se pudo conectar con GitHub. Reintenta.",
+                Title = "Error de Conexión",
+                Content = "No se pudo obtener el script desde GitHub.",
                 Duration = 5,
             })
         end
     end,
 })
 
--- Sección de Créditos (Para que sepan que es tuyo)
-local CreditsTab = Window:CreateTab("Créditos", 4483362458)
-CreditsTab:CreateLabel("Script mantenido por [TU_NOMBRE]")
-CreditsTab:CreateParagraph({Title = "Sobre este Script", Content = "Esta es una versión libre y gratuita. Si te gusta, compártela."})
+-- Sección de Marca Personal
+local InfoTab = Window:CreateTab("Info", 4483362458)
+InfoTab:CreateLabel("VVVHUB mantenido por ti")
+InfoTab:CreateParagraph({Title = "Versión 1.0", Content = "Script gratuito y de código abierto alojado en GitHub."})
